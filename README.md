@@ -20,7 +20,12 @@ This project is currently under development. The following sections detail funct
 - [x] Normalization by removing spaces and converting to lowercase
 - [x] Log filtering: excluding words within a slice from being added to the report
 - [x] Basic ASCII beautifier
-- [ ] Log parsing to remove timestamps and dates
+- [x] Log parsing to remove timestamps and dates
+
+### Phase 3
+- [x] The Network Ingestor (Syslog/UDP)
+- [ ] Similarity Clustering
+- [ ] Graceful Shutdown
 
 ## ✨ Features
 

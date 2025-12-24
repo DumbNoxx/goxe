@@ -4,24 +4,29 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/DumbNoxx/Goxe/internal/pipelines"
 	"github.com/DumbNoxx/Goxe/internal/utils/colors"
 	logslevel "github.com/DumbNoxx/Goxe/internal/utils/logsLevel"
 )
 
 // This function receives the map of logs created by the processor
-func Console(messages map[string]int, mu *sync.Mutex) {
+func Console(logs map[string]map[string]*pipelines.LogStats, mu *sync.Mutex) {
 	fmt.Println("\tPartial Report")
-	println("")
+	fmt.Println("----------------------------------")
 	mu.Lock()
-	for msg, count := range messages {
-		switch {
-		case count >= logslevel.CRITIC:
-			fmt.Printf("%s%d Veces: %s%s\n", colors.RED, count, msg, colors.RESET)
-		case count >= logslevel.NORMAL:
-			fmt.Printf("%s%d Veces: %s%s\n", colors.YELLOW, count, msg, colors.RESET)
-		case count <= logslevel.SAVED:
-			fmt.Printf("%s%d Veces: %s%s\n", colors.GREEN, count, msg, colors.RESET)
+	for key, messages := range logs {
+		fmt.Printf("ORIGEN: %s\n", key)
+		for msg, stats := range messages {
+			switch {
+			case stats.Count >= logslevel.CRITIC:
+				fmt.Printf("- %s%s (x%d)%s -- (Last seen %v)\n", colors.RED, msg, stats.Count, colors.RESET, stats.LastSeen.Format("15:04:05"))
+			case stats.Count >= logslevel.NORMAL:
+				fmt.Printf("- %s%s (x%d)%s -- (Last seen %v)\n", colors.YELLOW, msg, stats.Count, colors.RESET, stats.LastSeen.Format("15:04:05"))
+			case stats.Count <= logslevel.SAVED:
+				fmt.Printf("- %s%s (x%d)%s -- (Last seen %v)\n", colors.GREEN, msg, stats.Count, colors.RESET, stats.LastSeen.Format("15:04:05"))
+			}
 		}
 	}
+	fmt.Println("----------------------------------")
 	mu.Unlock()
 }

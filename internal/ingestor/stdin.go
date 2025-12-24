@@ -3,24 +3,28 @@ package ingestor
 import (
 	"bufio"
 	"fmt"
-	"github.com/DumbNoxx/Goxe/internal/processor"
 	"os"
 	"sync"
+	"time"
+
+	"github.com/DumbNoxx/Goxe/internal/pipelines"
 )
 
 // Function to read the received information
-func IngestorData() {
+func IngestorData(pipe chan<- pipelines.LogEntry, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Println("enter text (ctrl + d or ctrl + c to exit)")
-	pipe := make(chan string)
-	var wg sync.WaitGroup
-
-	wg.Add(1)
-	go processor.Clean(pipe, &wg)
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		pipe <- line
+		log := pipelines.LogEntry{
+			Content:   line,
+			Source:    "STDIN",
+			Timestamp: time.Now(),
+		}
+		pipe <- log
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -28,6 +32,4 @@ func IngestorData() {
 			fmt.Fprintf(os.Stderr, "error reading stdin: %v\n", err)
 		}
 	}
-	close(pipe)
-	wg.Wait()
 }

@@ -5,17 +5,18 @@ import (
 	"time"
 
 	"github.com/DumbNoxx/Goxe/internal/exporter"
+	"github.com/DumbNoxx/Goxe/internal/pipelines"
 )
 
 var (
-	messages = make(map[string]int)
-	mu       sync.Mutex
+	logs = make(map[string]map[string]*pipelines.LogStats)
+	mu   sync.Mutex
 )
 
 // Main function that processes the received information and sends it to their corresponding functions
-func Clean(pipe chan string, wg *sync.WaitGroup) {
+func Clean(pipe <-chan pipelines.LogEntry, wg *sync.WaitGroup) {
 	defer wg.Done()
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 	var sanitizadedText string
 
@@ -25,15 +26,26 @@ func Clean(pipe chan string, wg *sync.WaitGroup) {
 			if !ok {
 				return
 			}
-			sanitizadedText = Sanitizador(text)
+			sanitizadedText = Sanitizador(text.Content)
 			if len(sanitizadedText) < 3 {
 				continue
 			}
 			mu.Lock()
-			messages[Sanitizador(text)]++
+			if logs[text.Source] == nil {
+				logs[text.Source] = make(map[string]*pipelines.LogStats)
+			}
+			if logs[text.Source][sanitizadedText] == nil {
+				logs[text.Source][sanitizadedText] = &pipelines.LogStats{
+					Count:    0,
+					LastSeen: text.Timestamp,
+					Level:    text.Level,
+				}
+			}
+			logs[text.Source][sanitizadedText].Count++
+			logs[text.Source][sanitizadedText].LastSeen = text.Timestamp
 			mu.Unlock()
 		case <-ticker.C:
-			exporter.Console(messages, &mu)
+			exporter.Console(logs, &mu)
 		}
 	}
 
