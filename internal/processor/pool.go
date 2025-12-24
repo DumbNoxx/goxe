@@ -12,6 +12,7 @@ var (
 	mu       sync.Mutex
 )
 
+// Main function that processes the received information and sends it to their corresponding functions
 func Clean(pipe chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	ticker := time.NewTicker(5 * time.Second)

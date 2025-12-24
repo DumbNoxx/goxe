@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// Function to read the received information
 func IngestorData() {
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Println("enter text (ctrl + d or ctrl + c to exit)")

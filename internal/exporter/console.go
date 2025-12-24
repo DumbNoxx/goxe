@@ -8,8 +8,9 @@ import (
 	logslevel "github.com/DumbNoxx/Goxe/internal/utils/logsLevel"
 )
 
+// This function receives the map of logs created by the processor
 func Console(messages map[string]int, mu *sync.Mutex) {
-	fmt.Println("\tReporte parcial")
+	fmt.Println("\tPartial Report")
 	println("")
 	mu.Lock()
 	for msg, count := range messages {

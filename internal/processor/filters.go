@@ -1,5 +1,6 @@
 package processor
 
+// List of ignored words
 var Ignored = []string{
 	"healthcheck",
 	"heartbeat",
