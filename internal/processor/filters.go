@@ -29,6 +29,7 @@ var PatternsDate = []string{
 	`\d{2}/\d{4}`,
 	`\d{2}-\d{4}`,
 	`\d{2}:\d{2}:\d{2}`,
+	`[a-z]+\s\d{2},\s\d{4}`,
 }
 
 var PatternsLogLevel = `(?i)\b(debug|info|notice|warn(?:ing)?|error|critical|alert|emergency)\b`
