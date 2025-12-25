@@ -9,8 +9,8 @@ import (
 	"github.com/DumbNoxx/Goxe/internal/pipelines"
 )
 
-var (
-	PORT = ":5642"
+const (
+	PORT string = ":5642"
 )
 
 func Udp(pipe chan<- pipelines.LogEntry, wg *sync.WaitGroup) {
@@ -18,17 +18,17 @@ func Udp(pipe chan<- pipelines.LogEntry, wg *sync.WaitGroup) {
 
 	addr, err := net.ResolveUDPAddr("udp", PORT)
 	if err != nil {
-		fmt.Println("Error al resolver la dirección", err)
+		fmt.Println("Error resolving address:", err)
 		return
 	}
 	conn, err := net.ListenUDP("udp", addr)
 	if err != nil {
-		fmt.Println("Error al escuchar: ", err)
+		fmt.Println("Listening error:", err)
 		return
 	}
 	defer conn.Close()
 
-	fmt.Printf("Servidor escuchando en http://localhost%s\n", PORT)
+	fmt.Printf("Server listening on http://localhost%s\n", PORT)
 
 	buffer := make([]byte, 1024)
 
@@ -36,14 +36,15 @@ func Udp(pipe chan<- pipelines.LogEntry, wg *sync.WaitGroup) {
 		n, clientAddr, err := conn.ReadFromUDP(buffer)
 
 		if err != nil {
-			fmt.Println("error al leer", err)
+			fmt.Println("Error reading", err)
 			continue
 		}
 
 		message := string(buffer[:n])
+		host, _, _ := net.SplitHostPort(clientAddr.String())
 
 		dates := pipelines.LogEntry{
-			Source:    clientAddr.String(),
+			Source:    host,
 			Content:   message,
 			Timestamp: time.Now(),
 		}

@@ -35,11 +35,13 @@ func Clean(pipe <-chan pipelines.LogEntry, wg *sync.WaitGroup) {
 				logs[text.Source] = make(map[string]*pipelines.LogStats)
 			}
 			if logs[text.Source][sanitizadedText] == nil {
+
 				logs[text.Source][sanitizadedText] = &pipelines.LogStats{
 					Count:    0,
 					LastSeen: text.Timestamp,
 					Level:    text.Level,
 				}
+
 			}
 			logs[text.Source][sanitizadedText].Count++
 			logs[text.Source][sanitizadedText].LastSeen = text.Timestamp
