@@ -1,4 +1,4 @@
-package processor
+package filters
 
 // List of ignored words
 var Ignored = []string{

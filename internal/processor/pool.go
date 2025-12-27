@@ -6,6 +6,7 @@ import (
 
 	"github.com/DumbNoxx/Goxe/internal/exporter"
 	"github.com/DumbNoxx/Goxe/internal/pipelines"
+	"github.com/DumbNoxx/Goxe/internal/processor/cluster"
 )
 
 var (
@@ -26,7 +27,7 @@ func Clean(pipe <-chan pipelines.LogEntry, wg *sync.WaitGroup) {
 			if !ok {
 				return
 			}
-			sanitizadedText = Sanitizador(text.Content)
+			sanitizadedText = cluster.Cluster(text.Content)
 			if len(sanitizadedText) < 3 {
 				continue
 			}
