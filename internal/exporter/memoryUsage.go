@@ -5,7 +5,7 @@ import (
 	"runtime"
 )
 
-func MemoryUsage() {
+func memoryUsage() {
 	var memory runtime.MemStats
 	runtime.ReadMemStats(&memory)
 
@@ -14,4 +14,3 @@ func MemoryUsage() {
 	fmt.Printf("Heap en uso: %.2f Mb\n", float64(memory.HeapInuse)/1024/1024)
 	fmt.Println("")
 }
-

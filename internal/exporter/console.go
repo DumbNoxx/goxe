@@ -44,5 +44,5 @@ func Console(logs map[string]map[string]*pipelines.LogStats, mu *sync.Mutex) {
 	}
 
 	fmt.Println("----------------------------------")
-	MemoryUsage()
+	memoryUsage()
 }
