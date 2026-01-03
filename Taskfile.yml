@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+tasks:
+  dev:
+    desc: Run the app in development mode
+    cmds:
+      - echo "Running the application"
+      - go run ./cmd/goxe/main.go
+    silent: true
+  build:
+    desc: Building program in golang
+    cmds:
+      - echo "Built application"
+      - go build ./cmd/goxe/main.go
+    silent: true 
