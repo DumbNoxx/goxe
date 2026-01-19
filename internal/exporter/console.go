@@ -7,7 +7,7 @@ import (
 
 	"github.com/DumbNoxx/Goxe/internal/utils/colors"
 	logslevel "github.com/DumbNoxx/Goxe/internal/utils/logsLevel"
-	pipelines "github.com/DumbNoxx/Goxe/pgk/pipelines"
+	pipelines "github.com/DumbNoxx/Goxe/pkg/pipelines"
 )
 
 // This function receives the map of logs created by the processor

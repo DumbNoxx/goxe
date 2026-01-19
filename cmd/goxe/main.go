@@ -9,7 +9,7 @@ import (
 
 	"github.com/DumbNoxx/Goxe/internal/ingestor"
 	"github.com/DumbNoxx/Goxe/internal/processor"
-	"github.com/DumbNoxx/Goxe/pgk/pipelines"
+	"github.com/DumbNoxx/Goxe/pkg/pipelines"
 )
 
 func main() {

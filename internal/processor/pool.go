@@ -7,7 +7,7 @@ import (
 
 	"github.com/DumbNoxx/Goxe/internal/exporter"
 	"github.com/DumbNoxx/Goxe/internal/processor/cluster"
-	"github.com/DumbNoxx/Goxe/pgk/pipelines"
+	"github.com/DumbNoxx/Goxe/pkg/pipelines"
 )
 
 var (
@@ -20,16 +20,13 @@ func Clean(pipe <-chan pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex) {
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 	var sanitizadedText string
-	var isFinal bool = false
 
 	for {
 		select {
 		case text, ok := <-pipe:
 			if !ok {
-				isFinal = true
 				fmt.Println("\n[System] System terminated last report")
-				exporter.Console(logs, mu, isFinal)
-				isFinal = false
+				exporter.Console(logs, mu, true)
 				return
 			}
 			sanitizadedText = cluster.Cluster(text.Content, text.IdLog)
@@ -53,7 +50,7 @@ func Clean(pipe <-chan pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex) {
 			logs[text.Source][sanitizadedText].LastSeen = text.Timestamp
 			mu.Unlock()
 		case <-ticker.C:
-			exporter.Console(logs, mu, isFinal)
+			exporter.Console(logs, mu, false)
 		}
 	}
 
