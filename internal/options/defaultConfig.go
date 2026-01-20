@@ -1,12 +1,17 @@
 package options
 
-import "github.com/DumbNoxx/Goxe/pkg/options"
+import (
+	"os"
+
+	"github.com/DumbNoxx/Goxe/pkg/options"
+)
 
 func configDefault() options.Config {
+	home, _ := os.Hostname()
 
 	return options.Config{
 		Port:          1729,
-		IdLog:         "",
+		IdLog:         home,
 		PatternsWords: []string{},
 		GenerateLogsOptions: options.OptionsGenerateLogs{
 			GenerateLogs: false,

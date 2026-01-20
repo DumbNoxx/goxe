@@ -1,6 +1,7 @@
 package sanitizer
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -14,5 +15,9 @@ var (
 )
 
 func SafeWord(word string) *regexp.Regexp {
-	return regexp.MustCompile(regexp.QuoteMeta(word) + filters.PatternsIdLogs)
+	var newWord strings.Builder
+	fmt.Fprint(&newWord, word)
+	fmt.Fprint(&newWord, "_")
+	fmt.Println(newWord.String())
+	return regexp.MustCompile(regexp.QuoteMeta(newWord.String()) + filters.PatternsIdLogs)
 }
