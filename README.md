@@ -27,15 +27,19 @@ after normalization, identical messages are grouped together and reported with r
 example input:
 
 ```
-2025-01-01 12:00:01 error: connection failed
-2025-01-01 12:00:02 error: connection failed
-2025-01-01 12:00:03 error: connection failed
+Aug 22, 2022 23:59:59 ERROR: Connection failed 001 128.54.69.12
+Aug 22, 2022 23:59:59 ERROR: Connection failed 002 128.34.70.12
+Aug 22, 2022 23:59:59 ERROR: Connection failed 003 128.54.69.12
 ```
 
 aggregated output:
 
 ```
-error: connection failed (x3)
+        PARTIAL REPORT
+----------------------------------
+ORIGIN: [::1]
+- [3] ERROR: connection failed *  -- (Last seen 16:30:17)
+----------------------------------
 ```
 
 ## architecture
@@ -63,10 +67,10 @@ the system is optimized to handle high log volumes with minimal latency.
 * similarity clustering (group near-identical messages)
 * syslog/udp network ingestion
 * configuration file support
+* output log file
 
 ### v1 sprint 
 
-* output log file
 * notification dispatch pipeline
 * event burst detection
 

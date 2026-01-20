@@ -9,22 +9,19 @@ import (
 	"github.com/DumbNoxx/Goxe/pkg/options"
 )
 
-var Config = ConfigFile()
+var Config = configFile()
 
-func ConfigFile() (config options.Config) {
+func configFile() (config options.Config) {
 	dir, dirErr := os.UserConfigDir()
-	user, _ := os.Hostname()
 
-	configDefault := options.Config{
-		Port:          1729,
-		IdLog:         user,
-		PatternsWords: []string{},
-	}
+	configDefault := configDefault()
+
 	bDefault, _ := json.MarshalIndent(configDefault, "", "  ")
 
 	var (
 		configPath string
 		origConfig []byte
+		err        error
 	)
 
 	if dirErr != nil {
@@ -32,7 +29,7 @@ func ConfigFile() (config options.Config) {
 	}
 
 	configPath = filepath.Join(dir, "goxe", "config.json")
-	var err error
+
 	origConfig, err = os.ReadFile(configPath)
 	if err != nil && !os.IsNotExist(err) {
 		log.Fatal(err)

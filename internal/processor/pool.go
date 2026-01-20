@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/DumbNoxx/Goxe/internal/exporter"
+	"github.com/DumbNoxx/Goxe/internal/options"
 	"github.com/DumbNoxx/Goxe/internal/processor/cluster"
+	"github.com/DumbNoxx/Goxe/internal/utils"
 	"github.com/DumbNoxx/Goxe/pkg/pipelines"
 )
 
@@ -19,12 +21,19 @@ func Clean(pipe <-chan pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex) {
 	defer wg.Done()
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
+	tickerReportFile := time.NewTicker(utils.UserConfigHour())
+	defer tickerReportFile.Stop()
+
 	var sanitizadedText string
 
 	for {
 		select {
 		case text, ok := <-pipe:
 			if !ok {
+				if len(logs) <= 0 {
+					fmt.Println("\n[System] System terminated")
+					return
+				}
 				fmt.Println("\n[System] System terminated last report")
 				exporter.Console(logs, mu, true)
 				return
@@ -50,7 +59,20 @@ func Clean(pipe <-chan pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex) {
 			logs[text.Source][sanitizadedText].LastSeen = text.Timestamp
 			mu.Unlock()
 		case <-ticker.C:
+			if len(logs) <= 0 {
+				continue
+			}
 			exporter.Console(logs, mu, false)
+		case <-tickerReportFile.C:
+			if !options.Config.GenerateLogsOptions.GenerateLogs {
+				continue
+			}
+
+			mu.Lock()
+			logsToFlush := logs
+			logs = make(map[string]map[string]*pipelines.LogStats)
+			mu.Unlock()
+			exporter.File(logsToFlush)
 		}
 	}
 

@@ -29,7 +29,7 @@ func Console(logs map[string]map[string]*pipelines.LogStats, mu *sync.Mutex, isF
 
 	for key, messages := range logs {
 
-		fmt.Printf("ORIGEN: [%s]\n", key)
+		fmt.Printf("ORIGIN: [%s]\n", key)
 
 		if len(messages) == 0 {
 			continue
