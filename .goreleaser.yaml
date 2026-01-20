@@ -1,4 +1,4 @@
 builds:
-  - env: [CGO_ENABLE=0]
-    goos: [linux, window, darwin]
+  - env: [CGO_ENABLED=0]
+    goos: [linux, windows, darwin]
     goarch: [amd64, arm64]
