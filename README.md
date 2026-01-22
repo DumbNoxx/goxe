@@ -38,7 +38,7 @@ aggregated output:
         PARTIAL REPORT
 ----------------------------------
 ORIGIN: [::1]
-- [3] ERROR: connection failed *  -- (Last seen 16:30:19)
+- [3] ERROR: connection failed *  -- (First seen 16:30:17 - Last seen 16:30:19)
 ----------------------------------
 ```
 

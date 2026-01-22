@@ -38,11 +38,11 @@ func Console(logs map[string]map[string]*pipelines.LogStats, mu *sync.Mutex, isF
 		for msg, stats := range messages {
 			switch {
 			case stats.Count >= logslevel.CRITIC:
-				fmt.Printf("-%s [%d] %s %s -- (Last seen %v)\n", colors.RED, stats.Count, msg, colors.RESET, stats.LastSeen.Format("15:04:05"))
+				fmt.Printf("-%s [%d] %s %s -- (First seen %v - Last seen %v)\n", colors.RED, stats.Count, msg, colors.RESET, stats.FirstSeen.Format("15:04:05"), stats.LastSeen.Format("15:04:05"))
 			case stats.Count >= logslevel.NORMAL:
-				fmt.Printf("-%s [%d] %s %s -- (Last seen %v)\n", colors.YELLOW, stats.Count, msg, colors.RESET, stats.LastSeen.Format("15:04:05"))
+				fmt.Printf("-%s [%d] %s %s -- (First seen %v - Last seen %v)\n", colors.YELLOW, stats.Count, msg, colors.RESET, stats.FirstSeen.Format("15:04:05"), stats.LastSeen.Format("15:04:05"))
 			case stats.Count >= logslevel.SAVED:
-				fmt.Printf("-%s [%d] %s %s -- (Last seen %v)\n", colors.GREEN, stats.Count, msg, colors.RESET, stats.LastSeen.Format("15:04:05"))
+				fmt.Printf("-%s [%d] %s %s -- (First seen %v - Last seen %v)\n", colors.GREEN, stats.Count, msg, colors.RESET, stats.FirstSeen.Format("15:04:05"), stats.LastSeen.Format("15:04:05"))
 			}
 		}
 	}

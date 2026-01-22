@@ -49,9 +49,10 @@ func Clean(pipe <-chan pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex) {
 			if logs[text.Source][sanitizadedText] == nil {
 
 				logs[text.Source][sanitizadedText] = &pipelines.LogStats{
-					Count:    0,
-					LastSeen: text.Timestamp,
-					Level:    text.Level,
+					Count:     0,
+					FirstSeen: text.Timestamp,
+					LastSeen:  text.Timestamp,
+					Level:     text.Level,
 				}
 
 			}

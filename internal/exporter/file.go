@@ -46,7 +46,7 @@ func File(logs map[string]map[string]*pipelines.LogStats) {
 		}
 
 		for msg, stats := range messages {
-			fmt.Fprintf(&data, "- [%d] %s -- (Last seen %v)\n", stats.Count, msg, stats.LastSeen.Format("15:04:05"))
+			fmt.Fprintf(&data, "- [%d] %s -- (First seen %v - Last seen %v)\n", stats.Count, msg, stats.FirstSeen.Format("15:04:05"), stats.LastSeen.Format("15:04:05"))
 		}
 	}
 
