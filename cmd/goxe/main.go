@@ -40,7 +40,7 @@ func viewConfig() {
 
 func main() {
 	var wg sync.WaitGroup
-	pipe := make(chan *pipelines.LogEntry)
+	pipe := make(chan *pipelines.LogEntry, 100)
 	var mu sync.Mutex
 
 	options.CacheDirGenerate()

@@ -14,9 +14,6 @@ import (
 
 var (
 	PORT      string = ":" + strconv.Itoa(options.Config.Port)
-	entryPool        = sync.Pool{
-		New: func() any { return new(pipelines.LogEntry) },
-	}
 	lastIp    string
 	lastRawIp net.IP
 )
@@ -37,20 +34,13 @@ func Udp(pipe chan<- *pipelines.LogEntry, wg *sync.WaitGroup) {
 
 	fmt.Printf("Server listening on port %s\n", PORT)
 
-	buf := sync.Pool{
-		New: func() any {
-			return make([]byte, 1024)
-
-		},
-	}
-
 	for {
-		buffer := buf.Get().([]byte)
+		buffer := pipelines.BufferPool.Get().([]byte)
 		n, clientAddr, err := conn.ReadFromUDP(buffer)
 
 		if err != nil {
 			fmt.Println("Error reading", err)
-			buf.Put(buffer)
+			pipelines.BufferPool.Put(buffer)
 			continue
 		}
 
@@ -59,11 +49,12 @@ func Udp(pipe chan<- *pipelines.LogEntry, wg *sync.WaitGroup) {
 			lastIp = clientAddr.IP.String()
 		}
 
-		dates := entryPool.Get().(*pipelines.LogEntry)
+		dates := pipelines.EntryPool.Get().(*pipelines.LogEntry)
 		dates.Content = unsafe.String(&buffer[0], n)
 		dates.Source = lastIp
 		dates.Timestamp = time.Now()
 		dates.IdLog = options.Config.IdLog
+		dates.RawEntry = buffer
 
 		pipe <- dates
 	}

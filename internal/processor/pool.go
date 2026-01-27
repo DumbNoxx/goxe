@@ -19,8 +19,8 @@ import (
 )
 
 var (
-	logs      = make(map[string]map[string]*pipelines.LogStats)
-	logsBurst = make(map[string]*pipelines.LogBurst)
+	logs      = make(map[string]map[string]*pipelines.LogStats, 100)
+	logsBurst = make(map[string]*pipelines.LogBurst, 100)
 )
 
 var errs = []string{
@@ -50,8 +50,16 @@ func Clean(pipe <-chan *pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex) 
 				exporter.Console(logs, mu, true)
 				return
 			}
+			buf := text.RawEntry
 			sanitizadedText = cluster.Cluster(text.Content, text.IdLog)
 			if len(sanitizadedText) < 3 {
+				text.Content = ""
+				text.IdLog = ""
+				text.Source = ""
+				text.Timestamp = time.Time{}
+				text.RawEntry = nil
+				pipelines.EntryPool.Put(text)
+				pipelines.BufferPool.Put(buf)
 				continue
 			}
 			mu.Lock()
@@ -79,6 +87,13 @@ func Clean(pipe <-chan *pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex) 
 			logs[text.Source][sanitizadedText].Count++
 			logs[text.Source][sanitizadedText].LastSeen = text.Timestamp
 			mu.Unlock()
+			text.Content = ""
+			text.IdLog = ""
+			text.Source = ""
+			text.Timestamp = time.Time{}
+			text.RawEntry = nil
+			pipelines.EntryPool.Put(text)
+			pipelines.BufferPool.Put(buf)
 		case <-ticker.C:
 			if len(logs) <= 0 {
 				continue

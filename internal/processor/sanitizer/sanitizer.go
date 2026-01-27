@@ -14,7 +14,7 @@ func Sanitizer(text string, idLog string) string {
 	text = reIpLogs.ReplaceAllString(text, "")
 
 	if len(idLog) > 0 {
-		infoWord = SafeWord(idLog).ReplaceAllString(text, "")
+		infoWord = SafeWord.ReplaceAllString(text, "")
 	} else {
 		infoWord = text
 	}
