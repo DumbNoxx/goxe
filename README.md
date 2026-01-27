@@ -70,9 +70,6 @@ the system is optimized to handle high log volumes with minimal latency.
 * output log file
 * FirstSeen field to track initial occurrence
 * event burst detection
-
-### v1 sprint 
-
 * notification dispatch pipeline
 
 ### planned future

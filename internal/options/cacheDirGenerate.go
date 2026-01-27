@@ -32,7 +32,7 @@ func CacheDirGenerate() {
 		}
 	}
 
-	if Config.GenerateLogsOptions.GenerateLogs {
+	if Config.GenerateLogsOptions.GenerateLogsFile {
 		logs.LogsCacheDirGenerate(folderCachePath)
 	}
 }

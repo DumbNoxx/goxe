@@ -6,16 +6,22 @@ import (
 	"strconv"
 	"sync"
 	"time"
+	"unsafe"
 
 	"github.com/DumbNoxx/Goxe/internal/options"
 	"github.com/DumbNoxx/Goxe/pkg/pipelines"
 )
 
 var (
-	PORT string = ":" + strconv.Itoa(options.Config.Port)
+	PORT      string = ":" + strconv.Itoa(options.Config.Port)
+	entryPool        = sync.Pool{
+		New: func() any { return new(pipelines.LogEntry) },
+	}
+	lastIp    string
+	lastRawIp net.IP
 )
 
-func Udp(pipe chan<- pipelines.LogEntry, wg *sync.WaitGroup) {
+func Udp(pipe chan<- *pipelines.LogEntry, wg *sync.WaitGroup) {
 
 	addr, err := net.ResolveUDPAddr("udp", PORT)
 	if err != nil {
@@ -31,25 +37,33 @@ func Udp(pipe chan<- pipelines.LogEntry, wg *sync.WaitGroup) {
 
 	fmt.Printf("Server listening on port %s\n", PORT)
 
-	buffer := make([]byte, 1024)
+	buf := sync.Pool{
+		New: func() any {
+			return make([]byte, 1024)
+
+		},
+	}
 
 	for {
+		buffer := buf.Get().([]byte)
 		n, clientAddr, err := conn.ReadFromUDP(buffer)
 
 		if err != nil {
 			fmt.Println("Error reading", err)
+			buf.Put(buffer)
 			continue
 		}
 
-		message := string(buffer[:n])
-		host, _, _ := net.SplitHostPort(clientAddr.String())
-
-		dates := pipelines.LogEntry{
-			Source:    host,
-			Content:   message,
-			Timestamp: time.Now(),
-			IdLog:     options.Config.IdLog,
+		if !clientAddr.IP.Equal(lastRawIp) {
+			lastRawIp = clientAddr.IP
+			lastIp = clientAddr.IP.String()
 		}
+
+		dates := entryPool.Get().(*pipelines.LogEntry)
+		dates.Content = unsafe.String(&buffer[0], n)
+		dates.Source = lastIp
+		dates.Timestamp = time.Now()
+		dates.IdLog = options.Config.IdLog
 
 		pipe <- dates
 	}

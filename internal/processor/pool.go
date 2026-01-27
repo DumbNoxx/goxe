@@ -1,8 +1,11 @@
 package processor
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -11,6 +14,7 @@ import (
 	"github.com/DumbNoxx/Goxe/internal/processor/cluster"
 	"github.com/DumbNoxx/Goxe/internal/processor/sanitizer"
 	"github.com/DumbNoxx/Goxe/internal/utils"
+	pkg "github.com/DumbNoxx/Goxe/pkg/options"
 	"github.com/DumbNoxx/Goxe/pkg/pipelines"
 )
 
@@ -25,7 +29,7 @@ var errs = []string{
 }
 
 // Main function that processes the received information and sends it to their corresponding functions
-func Clean(pipe <-chan pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex) {
+func Clean(pipe <-chan *pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex) {
 	defer wg.Done()
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
@@ -81,7 +85,7 @@ func Clean(pipe <-chan pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex) {
 			}
 			exporter.Console(logs, mu, false)
 		case <-tickerReportFile.C:
-			if !options.Config.GenerateLogsOptions.GenerateLogs {
+			if !options.Config.GenerateLogsOptions.GenerateLogsFile {
 				continue
 			}
 
@@ -96,7 +100,7 @@ func Clean(pipe <-chan pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex) {
 }
 
 func burstDetection(logsBurst map[string]*pipelines.LogBurst, word string) {
-	limitBreak := time.Second * 10
+	limitBreak := time.Second * time.Duration(options.Config.BurstDetectionOptions.LimitBreak)
 	global, ok := logsBurst["AGGREGATE_TRAFFIC"]
 
 	if !ok {
@@ -111,7 +115,7 @@ func burstDetection(logsBurst map[string]*pipelines.LogBurst, word string) {
 	global.Count++
 	elapsedGlobal := time.Since(global.WindowStart)
 	if global.Count > 100 && elapsedGlobal <= limitBreak {
-		fmt.Println("DDos detected")
+		handleWebhook("DDos detected")
 	}
 	if elapsedGlobal > limitBreak {
 		global.Count = 1
@@ -125,10 +129,44 @@ func burstDetection(logsBurst map[string]*pipelines.LogBurst, word string) {
 	elapsed := time.Since(logsBurst[word].WindowStart)
 	logsBurst[word].Count++
 	if logsBurst[word].Count > 10 && elapsed <= limitBreak {
-		fmt.Println("Critical System Errors")
+		handleWebhook("Critical System Errors")
 	}
 	if elapsed > limitBreak {
 		logsBurst[word].WindowStart = time.Now()
 		logsBurst[word].Count = 1
+	}
+}
+
+func handleWebhook(text string) {
+	var (
+		data []byte
+		err  error
+	)
+
+	for _, url := range options.Config.WebHookUrls {
+
+		if strings.HasPrefix(url, "https://discord.com") {
+			message := pkg.WebhookDiscord{
+				Content: text,
+			}
+			data, err = json.Marshal(message)
+			sentData(data, err, url)
+		}
+
+		if strings.HasPrefix(url, "https://hooks.slack.com") {
+			message := pkg.WebhookSlack{
+				Text: text,
+			}
+			data, err = json.Marshal(message)
+			sentData(data, err, url)
+		}
+	}
+}
+
+func sentData(data []byte, err error, url string) {
+	options.SentWebhook(url, []byte(data))
+	if err != nil {
+		log.Print("Convert json fail")
+		return
 	}
 }

@@ -9,9 +9,9 @@ import (
 	"github.com/DumbNoxx/Goxe/pkg/options"
 )
 
-var Config = configFile()
+var Config = ConfigFile()
 
-func configFile() (config options.Config) {
+func ConfigFile() (config options.Config) {
 	dir, dirErr := os.UserConfigDir()
 
 	configDefault := configDefault()

@@ -15,3 +15,9 @@ tasks:
       - echo "Built application in /bin"
       - go build -o bin/main ./cmd/goxe/main.go  
     silent: true 
+  test:
+    desc: Run testing application
+    cmds:
+      - echo "Running test"
+      - go test -bench=. -benchmem ./cmd/goxe
+    silent: true

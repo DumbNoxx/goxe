@@ -13,9 +13,13 @@ func configDefault() options.Config {
 		Port:          1729,
 		IdLog:         home,
 		PatternsWords: []string{},
-		GenerateLogsOptions: options.OptionsGenerateLogs{
-			GenerateLogs: false,
-			Hour:         "00:00:00",
+		GenerateLogsOptions: options.GenerateLogsOptions{
+			GenerateLogsFile: false,
+			Hour:             "00:00:00",
+		},
+		WebHookUrls: []string{},
+		BurstDetectionOptions: options.BurstDetectionOptions{
+			LimitBreak: 10,
 		},
 	}
 }
