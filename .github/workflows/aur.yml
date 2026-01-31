@@ -1,0 +1,29 @@
+name: Update Aur
+
+on:
+  workflow_run:
+    workflows: ["Go"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  aur:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Publish to Aur
+        uses: KSXPC/action-aur@v1
+        with:
+          pkgname: goxe
+          pkgbuild: ./PKGBUILD
+          commit_username: Nxus
+          commit_email: nxusdev@protonmail.com
+          ssh_private_key: ${{ secrets.AUR_PRIVATE_KEY }}
+          commit_message: "Update to ${{ github.event.workflow_run.head_branch }}"
+          updpkgsums: true
+
