@@ -10,7 +10,7 @@ builds:
       - amd64
       - arm64
     ldflags:
-      - -X main.version=V{{.Version}}
+      - -X main.version=v{{.Version}}
       - -s -w
 
 archives:
