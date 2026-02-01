@@ -283,7 +283,6 @@ func handleWebhook(msg string, stats *pipelines.LogBurst) {
 			}
 
 			data, err = json.Marshal(payload)
-			fmt.Print(string(data))
 			sentData(data, err, url)
 		}
 	}
