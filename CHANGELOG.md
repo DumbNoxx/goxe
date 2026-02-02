@@ -52,6 +52,10 @@
 
 ### Others
 
+- chore: update goreleaser (2026-02-01)
+
+- chore(release): update changelog for v1.1.2 (2026-02-01)
+
 - Merge pull request #6 from DumbNoxx/fix/limitbreak-type-precision (2026-02-01)
 
 - Merge pull request #5 from DumbNoxx/fix/increase-udp-buffer (2026-02-01)
