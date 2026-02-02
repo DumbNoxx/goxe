@@ -1,5 +1,151 @@
 # CHANGELOG
 
+## v1.1.2 (2026-02-01)
+
+### Added
+
+- feat(logs): add FirstSeen field to track initial occurrence (2026-01-21)
+
+- feat: add output log file option (2026-01-20)
+
+- feat: add configuration file support (2026-01-19)
+
+- feat: add graceful shutdown and signal handling (2026-01-18)
+
+- feat(internal): add memoryUsage and control in mu.unlock in console.go (2026-01-02)
+
+- feat: add clusters and normalize logs (2026-01-01)
+
+- feat: add clusters and modify architecture (2025-12-27)
+
+- feat(server): add server udp (2025-12-24)
+
+- feat(internal): add filters, sanitizador, colors, logsLevel (2025-12-24)
+
+- feat(webhook): make webhooks look decent on slack and discord (2026-01-31)
+
+- feat(cli): add flag version (2026-01-31)
+
+- feat(exporter): remote syslog/network shipping support (2026-01-30)
+
+### Fixed
+
+- fix: reduce allocations in udp ingestion and sanitizer (2026-01-27)
+
+- fix: list structure in goreleaser (2026-01-20)
+
+- fix: error no defined func main in goreleaser file (2026-01-20)
+
+- fix: Fix types on goreleaser file (2026-01-20)
+
+- fix: fix idLog bug no detected (2026-01-20)
+
+- fix: add pattern date (2025-12-25)
+
+- fix: fix bug origin partial report (2025-12-25)
+
+- fix: update title of report (2025-12-24)
+
+- fix: improve date parsing regex (2026-02-01)
+
+- fix: change LimitBreak field to float64 for decimal precision (2026-02-01)
+
+### Others
+
+- Merge pull request #6 from DumbNoxx/fix/limitbreak-type-precision (2026-02-01)
+
+- Merge pull request #5 from DumbNoxx/fix/increase-udp-buffer (2026-02-01)
+
+- chore: add funding.yml (2026-02-01)
+
+- chore: update goreleaser.yaml (2026-02-01)
+
+- chore: update goreleaser.yaml (2026-02-01)
+
+- chore: update readme add gif (2026-02-01)
+
+- chore(release): update changelog for v1.1.1 emergency (2026-02-01)
+
+- Merge pull request #4 from DumbNoxx/fix/improve-date-parsing-regex (2026-02-01)
+
+- chore: delete pkgbuild (2026-01-31)
+
+- chore: delete workflow aur corrupt (2026-01-31)
+
+- chore: Update aur.yml (2026-01-31)
+
+- chore: Update aur.yml (2026-01-31)
+
+- chore(release): update changelog for v1.1.0 (2026-01-31)
+
+- Merge pull request #3 from DumbNoxx/better-logs-delivery (2026-01-31)
+
+- chore: add automated AUR publishing workflow (2026-01-30)
+
+- chore(release): update changelog for v1.0.1 (2026-01-27)
+
+- chore(release): update changelog for v1.0.0 (2026-01-27)
+
+- feat(internal/webhook): add notification dispatch pipeline with slack and discord support (2026-01-27)
+
+- chore(release): update changelog for v0.9.0 (2026-01-24)
+
+- feat(internal/pool): add event burst detection (2026-01-24)
+
+- chore: fix setup-go warnings and pin version (2026-01-21)
+
+- docs(README): fix inconsistency in README examples (2026-01-21)
+
+- chore(release): update changelog for v0.8.5 (2026-01-20)
+
+- docs: add write permissions for releases (2026-01-20)
+
+- chore(release): update changelog for v0.8.4 (2026-01-20)
+
+- chore(release): update changelog for v0.8.3 (2026-01-20)
+
+- chore(release): update changelog for v0.8.2 (2026-01-20)
+
+- chore(release): update changelog for v0.8.1 (2026-01-20)
+
+- Update Go version in GitHub Actions workflow (2026-01-20)
+
+- chore(release): update changelog for v0.8.0 (2026-01-20)
+
+- chore(release): update changelog for v0.7.0 (2026-01-19)
+
+- refactor(pkg): change folder name pgk to pkg xd (2026-01-19)
+
+- refactor(pkg/pipelines): change model of pipeline (2026-01-19)
+
+- chore(readme): add task for v1 sprint (2026-01-19)
+
+- docs: update license copyright information (2026-01-18)
+
+- chore(readme): update readmen license change file name (2026-01-18)
+
+- chore(release): update changelog for v0.6.0 (2026-01-18)
+
+- chore: styles name function memoryUsage (2026-01-02)
+
+- chore(config): add taskfile (2026-01-02)
+
+- chore: add changelog (2026-01-02)
+
+- Merge pull request #1 from elisiei/patch-1 (2025-12-27)
+
+- chore: comments (2025-12-24)
+
+- Initial project (2025-12-24)
+
+- Initial commit (2025-12-23)
+
+- Update README.md (2025-12-27)
+
+- Merge branch 'main' into better-logs-delivery (2026-01-30)
+
+- fix(internal/syslog): increase UDP read buffer to 16MB (2026-02-01)
+
 ## v1.1.1 (2026-02-01)
 
 ### Added
