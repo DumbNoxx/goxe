@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -18,12 +19,23 @@ import (
 
 var (
 	versionFlag *bool
-	version     = ""
+	version     string
 )
 
 func init() {
 	versionFlag = flag.Bool("v", false, "")
+}
+func getVersion() string {
+	if version != "" {
+		return version
+	}
 
+	if info, ok := debug.ReadBuildInfo(); ok {
+		if info.Main.Version != "" && info.Main.Version != "(devel)" {
+			return info.Main.Version
+		}
+	}
+	return "vDev-build"
 }
 
 func viewConfig() {
@@ -53,7 +65,7 @@ func main() {
 	flag.Parse()
 
 	if *versionFlag {
-		fmt.Println(version)
+		fmt.Println(getVersion())
 		os.Exit(0)
 	}
 
