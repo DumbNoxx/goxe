@@ -26,14 +26,15 @@ func Udp(pipe chan<- *pipelines.LogEntry, wg *sync.WaitGroup) {
 		return
 	}
 	conn, err := net.ListenUDP("udp", addr)
-	conn.SetReadBuffer(16 * 1024 * 1024)
+	conn.SetReadBuffer(options.Config.BufferUdpSize * 1024 * 1024)
+
 	if err != nil {
 		fmt.Println("Listening error:", err)
 		return
 	}
 	defer conn.Close()
 
-	fmt.Printf("Server listening on port %s\n", PORT)
+	fmt.Printf("Goxe listening on port %s\n", PORT)
 
 	for {
 		buffer := pipelines.BufferPool.Get().([]byte)
