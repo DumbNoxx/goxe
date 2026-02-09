@@ -82,6 +82,8 @@ origin: [::1]
     - `shipper.address`: "" — remote address to ship processed logs (e.g., "127.0.0.1:5000")
     - `shipper.flushInterval`: 30 — interval in seconds between network transmissions
     - `shipper.protocol`: "tcp" — transmission protocol (tcp, udp, etc. via [net.Dial](https://pkg.go.dev))
+    - `ReportInterval`: The interval in minutes for generating summaries of processed logs.
+    - `BufferUdpSize`: The size of the UDP buffer for receiving logs via UDP.
   - **hot reloading**: goxe monitors the `config.json` file in real-time. Any changes saved to the file are automatically applied without requiring a restart.
 
 - **routing and shipping**:
