@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/DumbNoxx/goxe/internal/utils/colors"
-	logslevel "github.com/DumbNoxx/goxe/internal/utils/logsLevel"
 	pipelines "github.com/DumbNoxx/goxe/pkg/pipelines"
 )
 
@@ -32,14 +31,7 @@ func Console(logs map[string]map[string]*pipelines.LogStats, isFinal bool) {
 		}
 
 		for msg, stats := range messages {
-			switch {
-			case stats.Count >= logslevel.CRITIC:
-				fmt.Printf("-%s [%d] %s %s -- (First seen %v - Last seen %v)\n", colors.RED, stats.Count, msg, colors.RESET, stats.FirstSeen.Format("15:04:05"), stats.LastSeen.Format("15:04:05"))
-			case stats.Count >= logslevel.NORMAL:
-				fmt.Printf("-%s [%d] %s %s -- (First seen %v - Last seen %v)\n", colors.YELLOW, stats.Count, msg, colors.RESET, stats.FirstSeen.Format("15:04:05"), stats.LastSeen.Format("15:04:05"))
-			case stats.Count >= logslevel.SAVED:
-				fmt.Printf("-%s [%d] %s %s -- (First seen %v - Last seen %v)\n", colors.GREEN, stats.Count, msg, colors.RESET, stats.FirstSeen.Format("15:04:05"), stats.LastSeen.Format("15:04:05"))
-			}
+			fmt.Printf("-%s [%d] %s %s -- (First seen %v - Last seen %v)\n", colors.GREEN, stats.Count, msg, colors.RESET, stats.FirstSeen.Format("15:04:05"), stats.LastSeen.Format("15:04:05"))
 		}
 	}
 
