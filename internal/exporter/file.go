@@ -12,7 +12,7 @@ import (
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
 )
 
-func File(logs map[string]map[string]*pipelines.LogStats) {
+func File(logs []map[string]map[string]*pipelines.LogStats) {
 	cacheDir, cacheDirErr := os.UserCacheDir()
 	if cacheDirErr != nil {
 		log.Printf("Could not determine cache directory: %v. Using default settings based on: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html", cacheDirErr)
@@ -34,19 +34,20 @@ func File(logs map[string]map[string]*pipelines.LogStats) {
 		log.Fatal(err)
 	}
 
-	fmt.Fprintf(&data, "PARTIAL REPORT - Set time: [%v]\n", options.Config.GenerateLogsOptions.Hour)
+	fmt.Fprintf(&data, "DIARY REPORT - Set time: [%v]\n", options.Config.GenerateLogsOptions.Hour)
 
 	fmt.Fprintln(&data, "----------------------------------")
-	for key, messages := range logs {
-
-		fmt.Fprintf(&data, "ORIGIN: [%s]\n", key)
+	for _, messages := range logs {
 
 		if len(messages) == 0 {
 			continue
 		}
 
-		for msg, stats := range messages {
-			fmt.Fprintf(&data, "- [%d] %s -- (First seen %v - Last seen %v)\n", stats.Count, msg, stats.FirstSeen.Format("15:04:05"), stats.LastSeen.Format("15:04:05"))
+		for key, stat := range messages {
+			fmt.Fprintf(&data, "ORIGIN: [%s]\n", key)
+			for msg, stats := range stat {
+				fmt.Fprintf(&data, "- [%d] %s -- (First seen %v - Last seen %v)\n", stats.Count, msg, stats.FirstSeen.Format("15:04:05"), stats.LastSeen.Format("15:04:05"))
+			}
 		}
 	}
 

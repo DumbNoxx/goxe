@@ -7,6 +7,8 @@ import (
 	"github.com/DumbNoxx/goxe/internal/options"
 )
 
+var TimeReportFile = UserConfigHour()
+
 func UserConfigHour() (dateHour time.Duration) {
 	userHour := options.Config.GenerateLogsOptions.Hour
 	parseHour, err := time.Parse("15:04:05", userHour)
