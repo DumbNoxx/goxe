@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -16,6 +19,7 @@ import (
 	"github.com/DumbNoxx/goxe/internal/options"
 	"github.com/DumbNoxx/goxe/internal/processor"
 	"github.com/DumbNoxx/goxe/internal/processor/filters"
+	pkg "github.com/DumbNoxx/goxe/pkg/options"
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
 )
 
@@ -27,6 +31,7 @@ var (
 func init() {
 	versionFlag = flag.Bool("v", false, "")
 }
+
 func getVersion() string {
 	if version != "" {
 		return version
@@ -71,6 +76,66 @@ func viewConfig(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
+func viewNewVersion(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+	var (
+		response       pkg.ResponseGithubApi
+		err            error
+		res            *http.Response
+		req            *http.Request
+		currentVersion = getVersion()
+	)
+
+	ticker := time.NewTicker(60 * time.Minute)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			req, err = http.NewRequestWithContext(ctx, http.MethodGet, "https://api.github.com/repos/DumbNoxx/goxe/releases/latest", nil)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			res, err = http.DefaultClient.Do(req)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			res.Body.Close()
+
+			body, err := io.ReadAll(res.Body)
+			if res.StatusCode > 299 {
+				log.Printf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
+				continue
+			}
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			err = json.Unmarshal(body, &response)
+			if err != nil {
+				log.Println("failed to unmarshal github response:", err)
+				continue
+			}
+			if currentVersion == "vDev-build" {
+				continue
+			}
+			if response.Tag_name == currentVersion {
+				continue
+			}
+
+			fmt.Printf("Update available: %s -> %s\n", currentVersion, response.Tag_name)
+
+			fmt.Println("--- Release Notes ---")
+			fmt.Printf("\n%v\n", response.Body)
+			fmt.Println("----------------------")
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
 func main() {
 	flag.Parse()
 
@@ -94,6 +159,8 @@ func main() {
 	go ingestor.Udp(ctx, pipe, &wgProducer)
 	wgProducer.Add(1)
 	go viewConfig(ctx, &wgProducer)
+	wgProducer.Add(1)
+	go viewNewVersion(ctx, &wgProducer)
 
 	<-ctx.Done()
 
