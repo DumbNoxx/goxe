@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"sync"
 	"time"
 
@@ -22,16 +21,10 @@ var (
 	logs       = make(map[string]map[string]*pipelines.LogStats, 100)
 	logsBurst  = make(map[string]*pipelines.LogBurst, 100)
 	timeReport = time.Duration(options.Config.ReportInterval * float64(time.Minute))
-	Str        *strings.Replacer
 )
 
 func init() {
-	listIgnored := make([]string, 0, len(options.Config.PatternsWords)*2)
-	for _, word := range filters.Ignored {
-		listIgnored = append(listIgnored, word)
-		listIgnored = append(listIgnored, "")
-	}
-	Str = strings.NewReplacer(listIgnored...)
+	filters.LoadFiltersWord()
 }
 
 // Main function that processes the received information and sends it to their corresponding functions
@@ -57,7 +50,7 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 				return
 			}
 			buf := text.RawEntry
-			sanitizadedText = cluster.Cluster(Str.Replace(text.Content), text.IdLog)
+			sanitizadedText = cluster.Cluster(filters.Str.Replace(text.Content), text.IdLog)
 			mu.Lock()
 			if logs[text.Source] == nil {
 				logs[text.Source] = make(map[string]*pipelines.LogStats)

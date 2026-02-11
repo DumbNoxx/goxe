@@ -15,6 +15,7 @@ import (
 	"github.com/DumbNoxx/goxe/internal/ingestor"
 	"github.com/DumbNoxx/goxe/internal/options"
 	"github.com/DumbNoxx/goxe/internal/processor"
+	"github.com/DumbNoxx/goxe/internal/processor/filters"
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
 )
 
@@ -62,6 +63,7 @@ func viewConfig(ctx context.Context, wg *sync.WaitGroup) {
 				fmt.Println("Config update, reload...")
 				lastModified = currentStat.ModTime()
 				options.Config = options.ConfigFile()
+				filters.LoadFiltersWord()
 			}
 		case <-ctx.Done():
 			return

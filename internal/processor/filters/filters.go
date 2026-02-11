@@ -1,10 +1,5 @@
 package filters
 
-import "github.com/DumbNoxx/goxe/internal/options"
-
-// List of ignored words
-var Ignored = options.Config.PatternsWords
-
 var PatternsDate = []string{
 	`\d{2}/\d{2}/\d{4}`,
 	`\d{2}-\d{2}-\d{4}`,
