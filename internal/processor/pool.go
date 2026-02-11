@@ -92,12 +92,12 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 			}
 
 			mu.Lock()
-			if options.Config.GenerateLogsOptions.GenerateLogsFile {
-				logsToFile = append(logsToFile, logs)
-			}
 			logsToFlush := logs
 			logs = make(map[string]map[string]*pipelines.LogStats, 100)
 			mu.Unlock()
+			if options.Config.GenerateLogsOptions.GenerateLogsFile {
+				logsToFile = append(logsToFile, logsToFlush)
+			}
 			exporter.Console(logsToFlush, false)
 			err := exporter.ShipLogs(logsToFlush)
 			if err != nil {
