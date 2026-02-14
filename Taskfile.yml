@@ -7,7 +7,7 @@ tasks:
     desc: Run the app in development mode
     cmds:
       - echo "Running the application"
-      - go run ./cmd/goxe/main.go
+      - go run ./cmd/goxe .
     silent: true
   build:
     desc: Building program in golang

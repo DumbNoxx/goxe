@@ -1,25 +1,27 @@
 package sanitizer
 
 import (
-	"strings"
+	"bytes"
 )
 
 // This function cleans the text by removing spaces and ignoring the words inside the filters
-func Sanitizer(text string, idLog string) string {
-	var infoWord string
+func Sanitizer(text []byte, idLog string) (newSlice []byte) {
+	var infoWord []byte
 
-	text = strings.TrimSpace(text)
-	text = reIpLogs.ReplaceAllString(text, "")
+	text = bytes.TrimSpace(text)
+	text = reIpLogs.ReplaceAll(text, []byte(""))
 
 	if len(idLog) > 0 {
-		infoWord = SafeWord.ReplaceAllString(text, "")
+		infoWord = SafeWord.ReplaceAll(text, []byte(""))
 	} else {
 		infoWord = text
 	}
 
-	textSanitize := strings.ToLower(infoWord)
-	infoText := reDates.ReplaceAllString(textSanitize, "")
-	cleanText := strings.TrimSpace(reStatus.ReplaceAllString(infoText, ""))
+	textSanitize := bytes.ToLower(infoWord)
+	infoText := reDates.ReplaceAll(textSanitize, []byte(""))
+	cleanText := bytes.TrimSpace(reStatus.ReplaceAll(infoText, []byte("")))
+	newSlice = ExtractLevelUpper(textSanitize)
 
-	return ExtractLevelUpper(textSanitize) + cleanText
+	newSlice = append(newSlice, cleanText...)
+	return newSlice
 }

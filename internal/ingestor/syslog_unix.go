@@ -10,7 +10,6 @@ import (
 	"sync"
 	"syscall"
 	"time"
-	"unsafe"
 
 	"github.com/DumbNoxx/goxe/internal/options"
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
@@ -71,7 +70,7 @@ func Udp(ctx context.Context, pipe chan<- *pipelines.LogEntry, wg *sync.WaitGrou
 		}
 
 		dates := pipelines.EntryPool.Get().(*pipelines.LogEntry)
-		dates.Content = unsafe.String(&buffer[0], n)
+		dates.Content = buffer[:n]
 		dates.Source = lastIp
 		dates.Timestamp = time.Now()
 		dates.IdLog = options.Config.IdLog

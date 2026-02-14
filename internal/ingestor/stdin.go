@@ -19,7 +19,7 @@ func IngestorData(pipe chan<- pipelines.LogEntry, wg *sync.WaitGroup, idLog stri
 	for scanner.Scan() {
 		line := scanner.Text()
 		log := pipelines.LogEntry{
-			Content:   line,
+			Content:   []byte(line),
 			Source:    "STDIN",
 			Timestamp: time.Now(),
 			IdLog:     idLog,

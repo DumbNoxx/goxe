@@ -14,12 +14,12 @@ var (
 	reDates  = regexp.MustCompile(strings.Join(filters.PatternsDate, "|"))
 	reIpLogs = regexp.MustCompile(filters.PatternIpLogs)
 	Re       = regexp.MustCompile(`\d+`)
-	SafeWord = SafeWordFunc(options.Config.IdLog)
+	SafeWord = SafeWordFunc([]byte(options.Config.IdLog))
 )
 
-func SafeWordFunc(word string) *regexp.Regexp {
+func SafeWordFunc(word []byte) *regexp.Regexp {
 	var newWord strings.Builder
-	fmt.Fprint(&newWord, word)
+	fmt.Fprint(&newWord, string(word))
 	fmt.Fprint(&newWord, "_")
 	return regexp.MustCompile(regexp.QuoteMeta(newWord.String()) + filters.PatternsIdLogs)
 }

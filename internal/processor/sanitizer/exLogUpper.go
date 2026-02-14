@@ -1,12 +1,14 @@
 package sanitizer
 
-import "strings"
+import (
+	"bytes"
+)
 
-func ExtractLevelUpper(log string) string {
-	status := reStatus.FindString(log)
+func ExtractLevelUpper(log []byte) []byte {
+	status := reStatus.Find(log)
 
-	if status == "" {
-		return ""
+	if len(status) <= 0 {
+		return nil
 	}
-	return strings.ToUpper(status)
+	return bytes.ToUpper(status)
 }

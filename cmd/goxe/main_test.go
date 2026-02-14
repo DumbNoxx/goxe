@@ -2,6 +2,7 @@ package main
 
 import (
 	"net"
+	"os"
 	"testing"
 	"time"
 )
@@ -9,6 +10,9 @@ import (
 func BenchmarkServerUDP(b *testing.B) {
 	go main()
 
+	oldArgs := os.Args
+	os.Args = []string{oldArgs[0]}
+	defer func() { os.Args = oldArgs }()
 	time.Sleep(100 * time.Millisecond)
 
 	conn, err := net.Dial("udp", "127.0.0.1:1729")

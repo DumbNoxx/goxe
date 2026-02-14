@@ -7,7 +7,7 @@ import (
 
 type LogEntry struct {
 	Source    string
-	Content   string
+	Content   []byte
 	Timestamp time.Time
 	Level     string
 	IdLog     string

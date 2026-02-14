@@ -6,6 +6,7 @@ import (
 	"log"
 	"sync"
 	"time"
+	"unsafe"
 
 	"github.com/DumbNoxx/goxe/internal/exporter"
 	"github.com/DumbNoxx/goxe/internal/options"
@@ -54,18 +55,20 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 				return
 			}
 			buf := text.RawEntry
-			sanitizadedText = cluster.Cluster(filters.Str.Replace(text.Content), text.IdLog)
+			dataCluster := cluster.Cluster(text.Content, text.IdLog)
+			sanitizadedText = unsafe.String(unsafe.SliceData(dataCluster), len(dataCluster))
 			mu.Lock()
 			if logs[text.Source] == nil {
 				logs[text.Source] = make(map[string]*pipelines.LogStats)
 			}
-			word := sanitizer.ExtractLevelUpper(text.Content)
+			sliceData := sanitizer.ExtractLevelUpper(text.Content)
+			word := unsafe.String(unsafe.SliceData(sliceData), len(sliceData))
 			if logs[text.Source][sanitizadedText] == nil {
 				logs[text.Source][sanitizadedText] = &pipelines.LogStats{
 					Count:     0,
 					FirstSeen: text.Timestamp,
 					LastSeen:  text.Timestamp,
-					Level:     word,
+					Level:     []byte(word),
 				}
 			}
 			if logsBurst[word] == nil {
@@ -81,7 +84,7 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 			logs[text.Source][sanitizadedText].Count++
 			logs[text.Source][sanitizadedText].LastSeen = text.Timestamp
 			mu.Unlock()
-			text.Content = ""
+			text.Content = []byte("")
 			text.IdLog = ""
 			text.Source = ""
 			text.Timestamp = time.Time{}
