@@ -209,6 +209,7 @@ func autoUpdate(ctx context.Context) {
 	if strings.HasPrefix(currentLocation, "/usr/bin/goxe") {
 		fmt.Println("Goxe was installed via a package manager. Please use your package manager to update it to avoid versioning conflicts.")
 	}
+	<-ctx.Done()
 }
 
 func main() {
