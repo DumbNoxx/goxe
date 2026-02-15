@@ -115,7 +115,6 @@ func getVersionLatest(req *http.Request, res *http.Response, ctx context.Context
 func viewNewVersion(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var (
-		response       pkg.ResponseGithubApi
 		res            *http.Response
 		req            *http.Request
 		currentVersion = getVersion()
@@ -127,18 +126,20 @@ func viewNewVersion(ctx context.Context, wg *sync.WaitGroup) {
 	for {
 		select {
 		case <-ticker.C:
-			version := getVersionLatest(req, res, ctx)
-			if currentVersion == "vDev-build" {
-				continue
-			}
-			if version.Tag_name == currentVersion {
+			release := getVersionLatest(req, res, ctx)
+
+			if release.Tag_name == "vDev-build" {
 				continue
 			}
 
-			fmt.Printf("Update available: %s -> %s\n", currentVersion, response.Tag_name)
+			if release.Tag_name == currentVersion {
+				continue
+			}
+
+			fmt.Printf("Update available: %s -> %s\n", currentVersion, release.Tag_name)
 
 			fmt.Println("--- Release Notes ---")
-			fmt.Printf("\n%v\n", response.Body)
+			fmt.Printf("\n%v\n", release.Body)
 			fmt.Println("----------------------")
 		case <-ctx.Done():
 			return
