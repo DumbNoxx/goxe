@@ -13,7 +13,7 @@ tasks:
     desc: Building program in golang
     cmds:
       - echo "Built application in /bin"
-      - go build -o bin/goxe ./cmd/goxe/main.go  
+      - go build -o bin/goxe ./cmd/goxe 
     silent: true 
   test:
     desc: Run testing application

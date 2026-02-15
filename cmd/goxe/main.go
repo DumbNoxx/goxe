@@ -193,13 +193,18 @@ func autoUpdate(ctx context.Context) {
 			}
 		}
 		newVersion := exec.Command(currentLocation, "-is-upgrade")
+
 		newVersion.Stdin = os.Stdin
+		newVersion.Stdout = os.Stdout
+		newVersion.Stderr = os.Stderr
 		err := newVersion.Start()
+
 		if err != nil {
 			log.Printf("Failed to start new Version: %v\n", err)
 			return
 		}
 		<-ctx.Done()
+		return
 	}
 	if strings.HasPrefix(currentLocation, "/usr/bin/goxe") {
 		fmt.Println("Goxe was installed via a package manager. Please use your package manager to update it to avoid versioning conflicts.")
