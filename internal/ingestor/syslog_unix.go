@@ -27,6 +27,7 @@ func Udp(ctx context.Context, pipe chan<- *pipelines.LogEntry, wg *sync.WaitGrou
 	Server.Control = func(networ, addr string, c syscall.RawConn) error {
 		err := c.Control(func(fd uintptr) {
 			syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
+			syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, 0x0f, 1)
 		})
 		if err != nil {
 			return err

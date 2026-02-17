@@ -40,6 +40,27 @@ func init() {
 	isUpgrade = flag.Bool("is-upgrade", false, "Internal use for hot-swap")
 }
 
+func executeHandoff(once *sync.Once, cancel context.CancelFunc, pipe chan<- *pipelines.LogEntry, wgProc, wgProd *sync.WaitGroup) {
+	once.Do(func() {
+		cancel()
+
+		done := make(chan struct{})
+		go func() {
+			wgProd.Wait()
+			close(done)
+		}()
+
+		select {
+		case <-done:
+		case <-time.After(2 * time.Second):
+			fmt.Println("[System] Handoff: Force closing producers...")
+		}
+
+		close(pipe)
+		wgProc.Wait()
+	})
+}
+
 func getVersion() string {
 	if version != "" {
 		return version
@@ -147,7 +168,7 @@ func viewNewVersion(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func autoUpdate(ctx context.Context) {
+func autoUpdate(ctx context.Context, cancel context.CancelFunc, pipe chan<- *pipelines.LogEntry, wgProcessor, wgProducer *sync.WaitGroup, once *sync.Once) {
 	var (
 		req *http.Request
 		res *http.Response
@@ -161,26 +182,28 @@ func autoUpdate(ctx context.Context) {
 		log.Fatal(err)
 	}
 	if version.Tag_name != v {
-		if v == "vDev-build" {
+		if !strings.HasPrefix(currentLocation, gopath) {
 			fmt.Println("[Test] Local build detected, recompiling...")
-			cmd := exec.Command("go", "build", "-o", currentLocation, "./cmd/goxe")
+			tempBin := currentLocation + ".tmp"
+			cmd := exec.Command("go", "build", "-o", tempBin, "./cmd/goxe")
 			output, err := cmd.CombinedOutput()
 			if err != nil {
 				log.Printf("Build failed: %v\n", err)
 				log.Printf("Compiler says: %s\n", string(output))
 				return
 			}
-			fmt.Printf("[System] My PID is %d. Launching V2...\n", os.Getpid())
-			newVersion := exec.Command(currentLocation, "-is-upgrade")
-			newVersion.Stdout = os.Stdout
-			newVersion.Stderr = os.Stderr
-			newVersion.Stdin = os.Stdin
-
-			err = newVersion.Start()
-			if err != nil {
-				log.Printf("Failed to start new Version: %v\n", err)
+			if err := os.Rename(tempBin, currentLocation); err != nil {
+				fmt.Printf("[Error] Failed to swap binary: %v\n", err)
 				return
 			}
+
+			fmt.Println("[System] Preparing handoff, flushing buffers...")
+			executeHandoff(once, cancel, pipe, wgProcessor, wgProducer)
+			err = syscall.Exec(currentLocation, []string{currentLocation, "-is-upgrade"}, os.Environ())
+
+			fmt.Printf("\n[Error] ¡El salto a V2 falló!: %v\n", err)
+			os.Exit(1)
+
 			<-ctx.Done()
 			return
 		}
@@ -192,20 +215,18 @@ func autoUpdate(ctx context.Context) {
 				return
 			}
 		}
-		newVersion := exec.Command(currentLocation, "-is-upgrade")
+		fmt.Println("[System] Preparing handoff, flushing buffers...")
 
-		newVersion.Stdin = os.Stdin
-		newVersion.Stdout = os.Stdout
-		newVersion.Stderr = os.Stderr
-		err := newVersion.Start()
+		executeHandoff(once, cancel, pipe, wgProcessor, wgProducer)
+		err = syscall.Exec(currentLocation, []string{currentLocation, "-is-upgrade"}, os.Environ())
 
-		if err != nil {
-			log.Printf("Failed to start new Version: %v\n", err)
-			return
-		}
+		fmt.Printf("\n[Error] ¡El salto a V2 falló!: %v\n", err)
+		os.Exit(1)
+
 		<-ctx.Done()
 		return
 	}
+
 	if strings.HasPrefix(currentLocation, "/usr/bin/goxe") {
 		fmt.Println("Goxe was installed via a package manager. Please use your package manager to update it to avoid versioning conflicts.")
 	}
@@ -216,22 +237,24 @@ func main() {
 	flag.Parse()
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
+	stopChan := make(chan os.Signal, 1)
+	pipe := make(chan *pipelines.LogEntry, 100)
+	var (
+		wgProcessor sync.WaitGroup
+		wgProducer  sync.WaitGroup
+		mu          sync.Mutex
+		once        sync.Once
+	)
 
 	if *versionFlag {
 		fmt.Println(getVersion())
 		os.Exit(0)
 	}
 	if *isUpgrade {
-		p, _ := os.FindProcess(os.Getppid())
-		p.Signal(syscall.SIGINT)
+		fmt.Println("[System] System updated")
 	}
-	argMax := len(os.Args) - 1
 	arg := os.Args
 
-	if argMax > 1 {
-		log.Println("Too many arguments - Usage: [program] [arg]")
-		return
-	}
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, watchSignals...)
 
@@ -249,12 +272,11 @@ func main() {
 					case <-ticker.C:
 						if count != 5 {
 							fmt.Printf("%d..", count)
-						} else {
-							fmt.Printf("%d\n", count)
 						}
 						if count == 5 {
+							fmt.Printf("%d\n", count)
 							fmt.Println("Updating...")
-							autoUpdate(ctx)
+							autoUpdate(ctx, cancel, pipe, &wgProcessor, &wgProducer, &once)
 							updateDone = true
 						}
 						count++
@@ -263,7 +285,6 @@ func main() {
 					}
 
 				}
-				<-ctx.Done()
 				return
 			}
 			if sig == os.Interrupt {
@@ -279,11 +300,6 @@ func main() {
 		return
 	}
 
-	var wgProcessor sync.WaitGroup
-	var wgProducer sync.WaitGroup
-	pipe := make(chan *pipelines.LogEntry, 100)
-	var mu sync.Mutex
-
 	options.CacheDirGenerate()
 
 	wgProcessor.Add(1)
@@ -295,21 +311,10 @@ func main() {
 	wgProducer.Add(1)
 	go viewNewVersion(ctx, &wgProducer)
 
-	<-ctx.Done()
+	signal.Notify(stopChan, os.Interrupt)
+	<-stopChan
 
-	done := make(chan struct{})
-	go func() {
-		wgProducer.Wait()
-		close(done)
-	}()
-
-	select {
-	case <-done:
-	case <-time.After(2 * time.Second):
-		log.Println("[System] Force closing producers...")
-	}
-
-	close(pipe)
-	wgProcessor.Wait()
+	fmt.Println("[System] Shutdown app, flushing buffers...")
+	executeHandoff(&once, cancel, pipe, &wgProcessor, &wgProducer)
 
 }
