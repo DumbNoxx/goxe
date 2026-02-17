@@ -11,6 +11,36 @@ import (
 
 var Config = ConfigFile()
 
+// ConfigFile loads the configuration from the config.json file in the user's config directory.
+// If the file does not exist, it creates it with default values. If it exists but is invalid, it uses the default values.
+//
+// The function performs:
+//
+//   - Retrieves the user's configuration directory using os.UserConfigDir().
+//
+//   - If it fails, it prints a warning (continues with an empty dir, which will likely cause errors).
+//
+//   - Builds the full path: filepath.Join(dir, "goxe", "config.json").
+//
+//   - Attempts to read the file using os.ReadFile.
+//
+//   - If an error other than "does not exist" occurs, it terminates the program with log.Fatal.
+//
+//   - If the file does not exist:
+//
+//     -Creates the parent directory using os.MkdirAll (0700 permissions).
+//
+//     -Writes the default configuration (obtained from configDefault()) in indented JSON format with 0600 permissions.
+//
+//   - If writing fails, it prints an error with log.Printf.
+//
+//   - Uses the default data (bDefault) as the read content.
+//
+//   - Attempts to deserialize the content (origConfig) into the config variable using json.Unmarshal.
+//
+//   - If deserialization fails, it prints a warning and assigns the default configuration (configDefault).
+//
+//   - Returns the configuration (either read from the file or the default one).
 func ConfigFile() (config options.Config) {
 	dir, dirErr := os.UserConfigDir()
 

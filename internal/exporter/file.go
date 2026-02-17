@@ -12,6 +12,41 @@ import (
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
 )
 
+// File writes a log report to a file within the user's cache directory.
+//
+// Parameters:
+//
+//   - logs: a slice of log maps (each map follows the structure: source -> message -> statistics).
+//
+// Returns:
+//
+//   - void: no return value; however, it logs warnings via log.Printf or terminates the program with log.Fatal upon critical failure.
+//
+// The function performs:
+//
+//   - Retrieves the user's cache directory using os.UserCacheDir(). If it fails, a warning is printed and the process continues.
+//
+//   - Generates a filename based on the current date: "log_YYYY-MM-DD.log".
+//
+//   - Constructs the full path: <cacheDir>/goxe/logs/<filename>.
+//
+//   - Attempts to read the file location with os.ReadDir. If an error occurs that is not "not found," it terminates with log.Fatal.
+//
+//   - Builds the report content using a strings.Builder:
+//
+//     -Includes a line with the configured hour (options.Config.GenerateLogsOptions.Hour).
+//
+//     -Adds separators for clarity.
+//
+//     -For each map in logs, and for each source and message, it writes the origin, counter, message, and timestamps.
+//
+//     -Adds a final separator.
+//
+//   - If the file does not exist (os.IsNotExist(err)), it writes the content using os.WriteFile with 0600 permissions.
+//
+// Note:
+//   - The function only creates the file if it does not already exist; it does not overwrite or append to existing files.
+//   - It does not create the "logs" directory if missing; it assumes the directory was previously created (e.g., by CacheDirGenerate).
 func File(logs []map[string]map[string]*pipelines.LogStats) {
 	cacheDir, cacheDirErr := os.UserCacheDir()
 	if cacheDirErr != nil {

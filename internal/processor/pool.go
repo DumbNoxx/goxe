@@ -27,6 +27,11 @@ var (
 	Ticker           *time.Ticker
 )
 
+// init loads the word filters and configures the tickers for periodic log
+// exporting. It executes automatically upon package import.
+//
+// - TickerReportFile: controls report file generation.
+// - Ticker: controls periodic export (console/remote) based on ReportInterval.
 func init() {
 	filters.LoadFiltersWord()
 	TickerReportFile = time.NewTicker(utils.TimeReportFile)
@@ -34,7 +39,28 @@ func init() {
 	Ticker = time.NewTicker(TimeReport)
 }
 
-// Main function that processes the received information and sends it to their corresponding functions
+// Clean function that processes the received information and sends it to their corresponding functions
+//
+// Parameters:
+//   - ctx: context for cancellation (not explicitly used in the current body)
+//   - pipe: input channel of *pipelines.LogEntry. Processing continues until
+//     the channel is closed and all remaining entries are drained.
+//   - wg: WaitGroup to notify the caller that the goroutine has completed
+//   - mu: mutex protecting the shared maps 'logs' and 'logsBurst'.
+//
+// The function performs:
+//   - Sanitization and clustering of log content.
+//   - Statistics updates by source and message (logs).
+//   - Burst detection by log level (logsBurst).
+//   - Returning processed objects back to pools (EntryPool, BufferPool).
+//   - Periodic exporting triggered by Ticker.C
+//     Sends logs to exporter.ShipLogs and exporter.Console.
+//     If GenerateLogsFile is enabled, accumulates logs for later writing.
+//   - File Export triggered by TickerReportFile.C when GenerateLogsFile is true.
+//
+// Note: This functions is intented to run as a concurrent goroutine.
+// It uses the unsafe package for zero-copy byte-to-string conversions,
+// assuming the underlying buffers will not be modified afterward.
 func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex) {
 	defer wg.Done()
 	defer Ticker.Stop()

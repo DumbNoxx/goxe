@@ -21,6 +21,35 @@ type TcpLogSent struct {
 	Message   string    `json:"message"`
 }
 
+// ShipLogs sends accumulated logs to a remote server (shipper) using the configured protocol.
+//
+// Parameters:
+//
+//   - logs: a map of maps where the outer key is the source and the inner map contains messages and their statistics.
+//
+// Returns:
+//
+//   - error: nil if the transmission was successful or no address is configured; otherwise, returns connection, marshaling, or write errors.
+//
+// The function performs:
+//
+//   - If options.Config.ShipperConfig.Address is empty, it returns nil and does nothing.
+//
+//   - Establishes a connection using the protocol, address, and timeout specified in the configuration.
+//
+//   - For each source in logs:
+//
+//     -Constructs a DataSentTcp structure with the origin and a slice of TcpLogSent.
+//
+//     -For each message in that source, creates a TcpLogSent with count, firstSeen, lastSeen, and the message content.
+//
+//     -Serializes the structure to JSON.
+//
+//     -Writes the data to the connection.
+//
+//   - If any error occurs (connection, marshal, or write), it returns immediately.
+//
+//   - Upon completion, closes the connection and returns nil.
 func ShipLogs(logs map[string]map[string]*pipelines.LogStats) (err error) {
 	if options.Config.ShipperConfig.Address == "" {
 		return nil

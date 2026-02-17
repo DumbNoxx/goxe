@@ -11,6 +11,27 @@ import (
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
 )
 
+// HandleWebhook sends burst notifications to the configured URLs (Discord or Slack).
+//
+// Parameters:
+//
+//   - msg: burst category (e.g., 'D', 'AGGREGATE_TRAFFIC').
+//   - stats: burst statistics (Count, WindowStart, AlertsSent, LastAlertTime).
+//
+// Returns:
+//
+//   - void: the functions sends HTTP request but does not return any value.
+//
+// The function performs:
+//
+//   - Iterates over each URL in 'options.Config.WebHookUrls'.
+//
+//   - If the URL start with 'https://discord.com', it constructs a Discord-formatted payload
+//     using types from the pkg (WebhookDiscord, OptionsEmbedsDiscord, AuthorOptionsEmbedsDiscord, FieldEmbedsDiscord, FooterEmbedsDiscord),
+//     serializes it to JSON, and calls sentData to send it.
+//
+//   - If the URL start with 'https://hooks.slack.com', it constructs a Slack-formatted payload
+//     (header, section, divider, context,blocks), serializes it to JSON, and calls sentData.
 func HandleWebhook(msg string, stats *pipelines.LogBurst) {
 	var (
 		data []byte

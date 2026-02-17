@@ -21,6 +21,29 @@ var (
 	Server    net.ListenConfig
 )
 
+// Udp listens on a UDP port, receives datagrams, converts them into LogEntry, and sends them to a channel.
+// (Windows-specific implementation).
+//
+// Parameters:
+//
+//   - ctx: context for cancellation; when cancelled, the function closes the connection and terminates.
+//   - pipe: write-only channel (chan<- *pipelines.LogEntry) where log entries will be sent.
+//   - wg: pointer to sync.WaitGroup to signal the caller that the goroutine has finished (calls wg.Done() at the end).
+//
+// Returns:
+//
+//   - void: the function runs until ctx is cancelled or a critical error occurs.
+//
+// The function performs:
+//
+//   - Listens on the port defined by the PORT global constant using Server.ListenPacket.
+//   - Adjusts the receive buffer size based on options.Config.BufferUdpSize (in MB).
+//   - In a separate goroutine, closes the connection when ctx.Done() is triggered.
+//   - In a loop, retrieves a buffer from the pool (pipelines.BufferPool), reads a datagram, and extracts the client's IP address.
+//   - Constructs a pipelines.LogEntry with the content, source (IP), timestamp, IdLog (from options.Config), and the original buffer.
+//   - Sends the entry to the pipe channel, respecting context cancellation.
+//   - If a read error occurs that is not related to cancellation, it logs the error and continues.
+//   - Upon termination (via cancellation), the function returns.
 func Udp(ctx context.Context, pipe chan<- *pipelines.LogEntry, wg *sync.WaitGroup) {
 	defer wg.Done()
 	conn, err := Server.ListenPacket(ctx, "udp", PORT)

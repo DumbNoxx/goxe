@@ -17,6 +17,23 @@ var (
 	SafeWord = SafeWordFunc([]byte(options.Config.IdLog))
 )
 
+// SafeWordFunc constructs a regular expression that searches for the pattern "<idLog>_<numeric ID>".
+//
+// Parameters:
+//
+//   - word: byte slice containing the base identifier (e.g., the value of options.Config.IdLog).
+//
+// Returns:
+//
+//   - *regexp.Regexp: a compiled regular expression that recognizes the identifier followed by an underscore
+//     and a sequence of digits (based on filters.PatternsIdLogs).
+//
+// The function performs:
+//
+//   - Builds a string by concatenating the identifier (word converted to string) with an underscore.
+//   - Escapes any special characters using regexp.QuoteMeta to ensure they are interpreted literally.
+//   - Appends the digit pattern from filters.PatternsIdLogs.
+//   - Compiles and returns the resulting regular expression.
 func SafeWordFunc(word []byte) *regexp.Regexp {
 	var newWord strings.Builder
 	fmt.Fprint(&newWord, string(word))
