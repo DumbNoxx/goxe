@@ -1,5 +1,3 @@
-# goxe
-
 ![Made with VHS](https://vhs.charm.sh/vhs-5h1jmrUc7TMULoD2Mo48Ci.gif)
 
 reduce large volumes of repetitive logs into compact, readable aggregates.
@@ -9,6 +7,15 @@ normalizes and filters them, and aggregates repeated messages into a single-line
 the result is less noise, lower bandwidth usage, and cheaper storage without losing visibility into recurring issues.
 
 goxe is designed to run continuously in the background as part of a logging pipeline or sidecar.
+
+<div align="center">
+
+  [![Compile](https://img.shields.io/github/actions/workflow/status/dumbnoxx/goxe/go.yml?label=compile)](https://github.com/dumbnoxx/goxe/actions/workflows/go.yml)
+![License](https://img.shields.io/badge/license-Apache%202-blue)
+
+[](https://github.com/DumbNoxx/goxe/blob/main/LICENSE)
+
+</div>
 
 ## recommended install
 
