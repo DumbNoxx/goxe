@@ -11,7 +11,7 @@ goxe is designed to run continuously in the background as part of a logging pipe
 <div align="center">
 
   [![Compile](https://img.shields.io/github/actions/workflow/status/dumbnoxx/goxe/go.yml?label=compile)](https://github.com/dumbnoxx/goxe/actions/workflows/go.yml)
-![License](https://img.shields.io/badge/license-Apache%202-blue)
+[![License](https://img.shields.io/badge/license-Apache%202-blue)](https://github.com/DumbNoxx/goxe/blob/main/LICENSE)
 
 [](https://github.com/DumbNoxx/goxe/blob/main/LICENSE)
 
