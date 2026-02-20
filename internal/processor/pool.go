@@ -78,6 +78,7 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 				}
 				fmt.Println("\n[System] System terminated last report")
 				exporter.Console(logs, true)
+				export.ShipLogs(logs)
 				return
 			}
 			buf := text.RawEntry
@@ -144,6 +145,7 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 			logsToFile = make([]map[string]map[string]*pipelines.LogStats, 0)
 			mu.Unlock()
 			exporter.File(logsToFlush)
+			exporter.ShipLogsFile(logsToFlush)
 		}
 	}
 }
