@@ -156,6 +156,8 @@ func viewNewVersion(ctx context.Context, wg *sync.WaitGroup) {
 			fmt.Println("--- Release Notes ---")
 			fmt.Printf("\n%v\n", release.Body)
 			fmt.Println("----------------------")
+			fmt.Println("\n[Update] To install the latest version, please run 'goxe update' in a separate terminal.")
+			fmt.Println("[Update] Note: This applies if goxe was installed via 'go install'.")
 		case <-ctx.Done():
 			return
 		}

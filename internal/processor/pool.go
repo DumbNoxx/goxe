@@ -78,7 +78,7 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 				}
 				fmt.Println("\n[System] System terminated last report")
 				exporter.Console(logs, true)
-				export.ShipLogs(logs)
+				exporter.ShipLogs(logs)
 				return
 			}
 			buf := text.RawEntry
