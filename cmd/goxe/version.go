@@ -254,7 +254,7 @@ func autoUpdate(ctx context.Context, cancel context.CancelFunc, pipe chan<- *pip
 		executeHandoff(once, cancel, pipe, wgProcessor, wgProducer)
 		err = syscall.Exec(currentLocation, []string{currentLocation, "-is-upgrade"}, os.Environ())
 
-		fmt.Printf("\n[Error] ¡El salto a V2 falló!: %v\n", err)
+		fmt.Printf("\n[Error] the handoff failed!: %v\n", err)
 		os.Exit(1)
 
 		<-ctx.Done()
