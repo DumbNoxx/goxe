@@ -71,6 +71,11 @@ func HandleWebhook(msg string, stats *pipelines.LogBurst) {
 						Value:  fmt.Sprintf("%d", stats.Count),
 						Inline: true,
 					},
+					{
+						Name:   "IP",
+						Value:  stats.Ip,
+						Inline: true,
+					},
 				},
 				Footer: pkg.FooterEmbedsDiscord{
 					Text: "Your Log Collector ❤️",
@@ -97,10 +102,11 @@ func HandleWebhook(msg string, stats *pipelines.LogBurst) {
 				Text: &pkg.OptionsTextMrkSlack{
 					Type: "mrkdwn",
 					Text: fmt.Sprintf(
-						"```Check the server, it's overheating.\nCount: %d - Start Time: %v - Category: %s```",
+						"```Check the server, it's overheating.\nCount: %d - Start Time: %v - Category: %s - IP: %s```",
 						stats.Count,
 						stats.WindowStart.Format("02-01-2006, 15:04"),
 						stats.Category,
+						stats.Ip,
 					),
 				},
 			}

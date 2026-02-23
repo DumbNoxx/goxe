@@ -6,6 +6,7 @@ import (
 
 	"github.com/DumbNoxx/goxe/internal/options"
 	webhooks "github.com/DumbNoxx/goxe/internal/processor/burstDetection/Webhooks"
+	"github.com/DumbNoxx/goxe/internal/processor/filters"
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
 )
 
@@ -52,7 +53,7 @@ var (
 //     - if 10 global alerts have been sent or the last one was less than 5 seconds ago, it does nothing.
 //
 //     - Otherwise, it triggers a webhook for AGGREGATE_TRAFFIC and updates its metada.
-func BurstDetection(logsBurst map[string]*pipelines.LogBurst, word string) {
+func BurstDetection(logsBurst map[string]*pipelines.LogBurst, word string, text []byte) {
 	limitBreak := time.Duration(float64(time.Second) * options.Config.BurstDetectionOptions.LimitBreak)
 	if slices.Contains(errs, word) {
 		stats := logsBurst[word]
@@ -61,6 +62,7 @@ func BurstDetection(logsBurst map[string]*pipelines.LogBurst, word string) {
 		if elapsed > limitBreak {
 			logsBurst[word].WindowStart = time.Now()
 			logsBurst[word].Count = 1
+
 			logsBurst[word].AlertsSent = 0
 			logsBurst[word].LastAlertTime = time.Time{}
 			goto CheckGlobal
@@ -88,6 +90,7 @@ CheckGlobal:
 			Count:         0,
 			Category:      "AGGREGATE_TRAFFIC",
 			WindowStart:   time.Now(),
+			Ip:            filters.GetIpBurstDetection(text),
 			LastAlertTime: time.Time{},
 			AlertsSent:    0,
 		}
