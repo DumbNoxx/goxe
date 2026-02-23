@@ -101,13 +101,14 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 			if logsBurst[word] == nil {
 				logsBurst[word] = &pipelines.LogBurst{
 					Count:         0,
+					Ip:            filters.GetIpBurstDetection(text.Content),
 					Category:      word,
 					WindowStart:   time.Now(),
 					AlertsSent:    0,
 					LastAlertTime: time.Time{},
 				}
 			}
-			burstdetection.BurstDetection(logsBurst, word)
+			burstdetection.BurstDetection(logsBurst, word, text.Content)
 			logs[text.Source][sanitizadedText].Count++
 			logs[text.Source][sanitizadedText].LastSeen = text.Timestamp
 			mu.Unlock()
