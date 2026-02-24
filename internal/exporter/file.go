@@ -66,7 +66,8 @@ func File(logs []map[string]map[string]*pipelines.LogStats) {
 	folderCachePath = filepath.Join(cacheDir, "goxe", "logs", file)
 	_, err = os.ReadDir(folderCachePath)
 	if err != nil && !os.IsNotExist(err) {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 
 	fmt.Fprintf(&data, "DIARY REPORT - Set time: [%v]\n", options.Config.GenerateLogsOptions.Hour)

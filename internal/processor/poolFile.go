@@ -10,6 +10,7 @@ import (
 
 	"github.com/DumbNoxx/goxe/internal/exporter"
 	"github.com/DumbNoxx/goxe/internal/processor/cluster"
+	"github.com/DumbNoxx/goxe/internal/processor/integrations"
 	"github.com/DumbNoxx/goxe/internal/processor/sanitizer"
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
 )
@@ -54,6 +55,8 @@ import (
 //
 //   - Calls exporter.FileReader(logsFile, routeFile) to save the report to a file.
 //
+//   - Calls integrations.Integrations(logs), send data to Observability Platforms
+//
 //   - Checks for scanner errors via scanner.Err() and terminates with log.Fatal if found.
 //
 //   - Clears the logsFile map using 'clear()' to free memory.
@@ -94,6 +97,7 @@ func CleanFile(file *os.File, idLog string, mu *sync.Mutex, routeFile string) {
 		log.Fatal(err)
 	}
 	exporter.FileReader(logsFile, routeFile)
+	integrations.Integrations(logsFile)
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)

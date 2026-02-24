@@ -13,6 +13,7 @@ import (
 	burstdetection "github.com/DumbNoxx/goxe/internal/processor/burstDetection"
 	"github.com/DumbNoxx/goxe/internal/processor/cluster"
 	"github.com/DumbNoxx/goxe/internal/processor/filters"
+	"github.com/DumbNoxx/goxe/internal/processor/integrations"
 	"github.com/DumbNoxx/goxe/internal/processor/sanitizer"
 	"github.com/DumbNoxx/goxe/internal/utils"
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
@@ -54,7 +55,7 @@ func init() {
 //   - Burst detection by log level (logsBurst).
 //   - Returning processed objects back to pools (EntryPool, BufferPool).
 //   - Periodic exporting triggered by Ticker.C
-//     Sends logs to exporter.ShipLogs and exporter.Console.
+//     Sends logs to exporter.ShipLogs, exporter.Console and integrations.Integrations.
 //     If GenerateLogsFile is enabled, accumulates logs for later writing.
 //   - File Export triggered by TickerReportFile.C when GenerateLogsFile is true.
 //
@@ -132,6 +133,7 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 				logsToFile = append(logsToFile, logsToFlush)
 			}
 			exporter.Console(logsToFlush, false)
+			integrations.Integrations(logsToFlush)
 			err := exporter.ShipLogs(logsToFlush)
 			if err != nil {
 				log.Print("Error sent")
