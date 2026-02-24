@@ -1,7 +1,6 @@
 package exporter
 
 import (
-	"encoding/json"
 	"net"
 	"time"
 
@@ -56,29 +55,13 @@ func ShipLogsFile(logs []map[string]map[string]*pipelines.LogStats) (err error) 
 	defer conn.Close()
 
 	for _, messages := range logs {
-
-		for key, stat := range messages {
-			var DataSentTcps DataSentTcp
-			DataSentTcps.Origin = key
-			DataSentTcps.Data = make([]TcpLogSent, 0, len(messages))
-			for msg, stats := range stat {
-				var logEntry = TcpLogSent{
-					Count:     stats.Count,
-					FirstSeen: stats.FirstSeen,
-					LastSeen:  stats.LastSeen,
-					Message:   msg,
-				}
-
-				DataSentTcps.Data = append(DataSentTcps.Data, logEntry)
-			}
-			data, err := json.Marshal(DataSentTcps)
-			if err != nil {
-				return err
-			}
-			_, err = conn.Write(data)
-			if err != nil {
-				return err
-			}
+		data, err := ShipsIntegrations(messages)
+		if err != nil {
+			return err
+		}
+		_, err = conn.Write(data)
+		if err != nil {
+			return err
 		}
 	}
 

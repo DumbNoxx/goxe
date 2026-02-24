@@ -10,6 +10,7 @@ type Config struct {
 	ShipperConfig         ShipperConfig         `json:"shipper"`
 	ReportInterval        float64               `json:"reportInterval"`
 	BufferUdpSize         int                   `json:"bufferUdpSize"`
+	Integrations          []IntegrationsShipper `json:"integrations"`
 }
 
 type GenerateLogsOptions struct {
@@ -25,4 +26,10 @@ type ShipperConfig struct {
 	Address       string `json:"address"`
 	FlushInterval int    `json:"flushInterval"`
 	Protocol      string `json:"protocol"`
+}
+
+type IntegrationsShipper struct {
+	Url           string            `json:"url"`
+	Headers       map[string]string `json:"headers"`
+	OnAggregation bool              `json:"onAggregation"`
 }

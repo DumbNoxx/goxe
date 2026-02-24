@@ -1,7 +1,6 @@
 package exporter
 
 import (
-	"encoding/json"
 	"net"
 	"time"
 
@@ -9,47 +8,32 @@ import (
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
 )
 
-type DataSentTcp struct {
-	Origin string       `json:"origin"`
-	Data   []TcpLogSent `json:"tcpLogSent"`
-}
-
-type TcpLogSent struct {
-	Count     int       `json:"count"`
-	FirstSeen time.Time `json:"firstSeen"`
-	LastSeen  time.Time `json:"lastSeen"`
-	Message   string    `json:"message"`
-}
-
-// ShipLogs sends accumulated logs to a remote server (shipper) using the configured protocol.
+// ShipLogs sends accumulated logs to a remote server (shipper) using the configured
+// protocol and address.
 //
 // Parameters:
 //
-//   - logs: a map of maps where the outer key is the source and the inner map contains messages and their statistics.
+//   - logs: map containing log statistics grouped by source and message.
 //
 // Returns:
 //
-//   - error: nil if the transmission was successful or no address is configured; otherwise, returns connection, marshaling, or write errors.
+//   - err: error object if the connection, data transformation, or transmission fails.
 //
 // The function performs:
 //
-//   - If options.Config.ShipperConfig.Address is empty, it returns nil and does nothing.
+//   - Checks if 'options.Config.ShipperConfig.Address' is empty; if so, returns nil.
 //
-//   - Establishes a connection using the protocol, address, and timeout specified in the configuration.
+//   - Establishes a network connection using the configured protocol, address, and
+//     timeout (based on FlushInterval).
 //
-//   - For each source in logs:
+//   - Uses 'defer' to ensure the connection is closed after the operation.
 //
-//     -Constructs a DataSentTcp structure with the origin and a slice of TcpLogSent.
+//   - Calls ShipsIntegrations(logs) to transform the log map into a JSON-encoded byte slice.
 //
-//     -For each message in that source, creates a TcpLogSent with count, firstSeen, lastSeen, and the message content.
+//   - Writes the resulting byte slice to the established connection.
 //
-//     -Serializes the structure to JSON.
-//
-//     -Writes the data to the connection.
-//
-//   - If any error occurs (connection, marshal, or write), it returns immediately.
-//
-//   - Upon completion, closes the connection and returns nil.
+//   - Returns the error if any step (dialing, transforming, or writing) fails;
+//     otherwise, returns nil.
 func ShipLogs(logs map[string]map[string]*pipelines.LogStats) (err error) {
 	if options.Config.ShipperConfig.Address == "" {
 		return nil
@@ -64,28 +48,11 @@ func ShipLogs(logs map[string]map[string]*pipelines.LogStats) (err error) {
 		return err
 	}
 	defer conn.Close()
-	for key, messages := range logs {
-		var DataSentTcps DataSentTcp
-		DataSentTcps.Origin = key
-		DataSentTcps.Data = make([]TcpLogSent, 0, len(messages))
-		for msg, stats := range messages {
-			var logEntry = TcpLogSent{
-				Count:     stats.Count,
-				FirstSeen: stats.FirstSeen,
-				LastSeen:  stats.LastSeen,
-				Message:   msg,
-			}
-
-			DataSentTcps.Data = append(DataSentTcps.Data, logEntry)
-		}
-		data, err := json.Marshal(DataSentTcps)
-		if err != nil {
-			return err
-		}
-		_, err = conn.Write(data)
-		if err != nil {
-			return err
-		}
+	data, err := ShipsIntegrations(logs)
+	_, err = conn.Write(data)
+	if err != nil {
+		return err
 	}
+
 	return nil
 }
