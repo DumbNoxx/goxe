@@ -10,11 +10,21 @@ import (
 	"slices"
 	"sync"
 
+	"github.com/DumbNoxx/goxe/internal/factory"
 	"github.com/DumbNoxx/goxe/internal/ingestor"
 	"github.com/DumbNoxx/goxe/internal/options"
 	"github.com/DumbNoxx/goxe/internal/processor"
+	"github.com/DumbNoxx/goxe/pkg/exporter"
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
 )
+
+var (
+	Shipper exporter.Shipper
+)
+
+func init() {
+	Shipper = factory.GetShipper(options.Config.Destination)
+}
 
 func main() {
 	flag.Parse()
@@ -63,7 +73,7 @@ func main() {
 	options.CacheDirGenerate()
 
 	wgProcessor.Add(1)
-	go processor.Clean(ctx, pipe, &wgProcessor, &mu)
+	go processor.Clean(ctx, pipe, &wgProcessor, &mu, Shipper)
 	wgProducer.Add(1)
 	go ingestor.Udp(ctx, pipe, &wgProducer)
 	wgProducer.Add(1)
@@ -75,6 +85,7 @@ func main() {
 	<-stopChan
 
 	fmt.Println("[System] Shutdown app, flushing buffers...")
+	fmt.Println(Shipper)
 	executeHandoff(&once, cancel, pipe, &wgProcessor, &wgProducer)
 
 }

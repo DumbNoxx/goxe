@@ -43,6 +43,8 @@ import (
 //
 //     -Integrations: empty slice
 //
+//     -Destination: empty string (used to determine the concrete Shipper implementation).
+//
 //   - Returns the complete structure.
 func configDefault() options.Config {
 	home, _ := os.Hostname()
@@ -67,5 +69,6 @@ func configDefault() options.Config {
 		ReportInterval: 60,
 		BufferUdpSize:  4,
 		Integrations:   []options.IntegrationsShipper{},
+		Destination:    "",
 	}
 }

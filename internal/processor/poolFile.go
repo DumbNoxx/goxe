@@ -12,6 +12,7 @@ import (
 	"github.com/DumbNoxx/goxe/internal/processor/cluster"
 	"github.com/DumbNoxx/goxe/internal/processor/integrations"
 	"github.com/DumbNoxx/goxe/internal/processor/sanitizer"
+	pkgEx "github.com/DumbNoxx/goxe/pkg/exporter"
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
 )
 
@@ -60,7 +61,7 @@ import (
 //   - Checks for scanner errors via scanner.Err() and terminates with log.Fatal if found.
 //
 //   - Clears the logsFile map using 'clear()' to free memory.
-func CleanFile(file *os.File, idLog string, mu *sync.Mutex, routeFile string) {
+func CleanFile(file *os.File, idLog string, mu *sync.Mutex, routeFile string, Shipper pkgEx.Shipper) {
 	var (
 		sanitizadedText string
 		data            []byte
@@ -92,12 +93,12 @@ func CleanFile(file *os.File, idLog string, mu *sync.Mutex, routeFile string) {
 		logsFile["file-reader"][sanitizadedText].LastSeen = time.Now()
 		mu.Unlock()
 	}
-	err := exporter.ShipLogs(logsFile)
+	err := exporter.ShipLogs(logsFile, Shipper)
 	if err != nil {
 		log.Fatal(err)
 	}
 	exporter.FileReader(logsFile, routeFile)
-	integrations.Integrations(logsFile)
+	integrations.Integrations(logsFile, Shipper)
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)

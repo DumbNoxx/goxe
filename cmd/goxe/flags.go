@@ -40,7 +40,7 @@ func brewFlag(wg *sync.Mutex) error {
 		return err
 	}
 	defer file.Close()
-	processor.CleanFile(file, idLog, wg, routeFile)
+	processor.CleanFile(file, idLog, wg, routeFile, Shipper)
 
 	return nil
 }

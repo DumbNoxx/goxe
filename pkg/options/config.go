@@ -11,6 +11,7 @@ type Config struct {
 	ReportInterval        float64               `json:"reportInterval"`
 	BufferUdpSize         int                   `json:"bufferUdpSize"`
 	Integrations          []IntegrationsShipper `json:"integrations"`
+	Destination           string                `json:"destination"`
 }
 
 type GenerateLogsOptions struct {

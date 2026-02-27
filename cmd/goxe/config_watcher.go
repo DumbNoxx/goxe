@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/DumbNoxx/goxe/internal/factory"
 	"github.com/DumbNoxx/goxe/internal/options"
 	"github.com/DumbNoxx/goxe/internal/processor/filters"
 	rTime "github.com/DumbNoxx/goxe/internal/processor/reportTime"
@@ -78,6 +79,7 @@ func viewConfig(ctx context.Context, wg *sync.WaitGroup) {
 				rTime.GetReportFileTime()
 				rTime.GetReportPartialTime()
 				filters.LoadFiltersWord()
+				factory.GetShipper(options.Config.Destination)
 			}
 		case <-ctx.Done():
 			return
