@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/DumbNoxx/goxe/internal/options"
+	"github.com/DumbNoxx/goxe/pkg/exporter"
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
 )
 
@@ -14,6 +15,8 @@ import (
 // Parameters:
 //
 //   - logs: map containing log statistics grouped by source and message.
+//
+//   - Shipper: an interface of type exporter.Shipper used to format the data before sending.
 //
 // Returns:
 //
@@ -28,13 +31,13 @@ import (
 //
 //   - Uses 'defer' to ensure the connection is closed after the operation.
 //
-//   - Calls ShipsIntegrations(logs) to transform the log map into a JSON-encoded byte slice.
+//   - Calls Shipper.PrepareShip(logs) to transform the log map into a formatted byte slice.
 //
 //   - Writes the resulting byte slice to the established connection.
 //
 //   - Returns the error if any step (dialing, transforming, or writing) fails;
 //     otherwise, returns nil.
-func ShipLogs(logs map[string]map[string]*pipelines.LogStats) (err error) {
+func ShipLogs(logs map[string]map[string]*pipelines.LogStats, Shipper exporter.Shipper) (err error) {
 	if options.Config.ShipperConfig.Address == "" {
 		return nil
 	}
@@ -48,7 +51,10 @@ func ShipLogs(logs map[string]map[string]*pipelines.LogStats) (err error) {
 		return err
 	}
 	defer conn.Close()
-	data, err := ShipsIntegrations(logs)
+	data, err := Shipper.PrepareShip(logs)
+	if err != nil {
+		return err
+	}
 	_, err = conn.Write(data)
 	if err != nil {
 		return err

@@ -8,8 +8,8 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/DumbNoxx/goxe/internal/exporter"
 	"github.com/DumbNoxx/goxe/internal/options"
+	"github.com/DumbNoxx/goxe/pkg/exporter"
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
 )
 
@@ -20,6 +20,8 @@ import (
 //
 //   - logs: map containing log statistics grouped by source and message.
 //
+//   - Shipper: an interface of type exporter.Shipper used to format the data before sending.
+//
 // The function performs:
 //
 //   - Initializes an http.Client with a 10-second timeout.
@@ -28,7 +30,7 @@ import (
 //
 //   - For each integration, checks if 'OnAggregation' is enabled:
 //
-//     -Calls exporter.ShipsIntegrations(logs) to get the JSON-encoded log data.
+//     -Calls Shipper.PrepareShip(logs) to get the formatted log data.
 //
 //     -Creates a new HTTP POST request to the integration's URL using the encoded data.
 //
@@ -44,13 +46,13 @@ import (
 //   - Upon successful execution, prints the HTTP status response to the console.
 //
 //   - Ensures the response body is closed to prevent resource leaks.
-func Integrations(logs map[string]map[string]*pipelines.LogStats) {
+func Integrations(logs map[string]map[string]*pipelines.LogStats, Shipper exporter.Shipper) {
 	var client = &http.Client{
 		Timeout: time.Second * 10,
 	}
 	for _, integration := range options.Config.Integrations {
 		if integration.OnAggregation {
-			data, err := exporter.ShipsIntegrations(logs)
+			data, err := Shipper.PrepareShip(logs)
 			if err != nil {
 				log.Println(err)
 				continue

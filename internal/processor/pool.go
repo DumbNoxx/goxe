@@ -16,6 +16,7 @@ import (
 	"github.com/DumbNoxx/goxe/internal/processor/integrations"
 	"github.com/DumbNoxx/goxe/internal/processor/sanitizer"
 	"github.com/DumbNoxx/goxe/internal/utils"
+	pkgEx "github.com/DumbNoxx/goxe/pkg/exporter"
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
 )
 
@@ -62,7 +63,7 @@ func init() {
 // Note: This functions is intented to run as a concurrent goroutine.
 // It uses the unsafe package for zero-copy byte-to-string conversions,
 // assuming the underlying buffers will not be modified afterward.
-func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex) {
+func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex, Shipper pkgEx.Shipper) {
 	defer wg.Done()
 	defer Ticker.Stop()
 	defer TickerReportFile.Stop()
@@ -79,7 +80,7 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 				}
 				fmt.Println("\n[System] System terminated last report")
 				exporter.Console(logs, true)
-				exporter.ShipLogs(logs)
+				exporter.ShipLogs(logs, Shipper)
 				return
 			}
 			buf := text.RawEntry
@@ -133,8 +134,8 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 				logsToFile = append(logsToFile, logsToFlush)
 			}
 			exporter.Console(logsToFlush, false)
-			integrations.Integrations(logsToFlush)
-			err := exporter.ShipLogs(logsToFlush)
+			integrations.Integrations(logsToFlush, Shipper)
+			err := exporter.ShipLogs(logsToFlush, Shipper)
 			if err != nil {
 				log.Print("Error sent")
 			}
@@ -148,7 +149,7 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 			logsToFile = make([]map[string]map[string]*pipelines.LogStats, 0)
 			mu.Unlock()
 			exporter.File(logsToFlush)
-			exporter.ShipLogsFile(logsToFlush)
+			exporter.ShipLogsFile(logsToFlush, Shipper)
 		}
 	}
 }

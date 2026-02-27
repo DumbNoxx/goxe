@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/DumbNoxx/goxe/internal/options"
+	"github.com/DumbNoxx/goxe/pkg/exporter"
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
 )
 
@@ -14,9 +15,11 @@ import (
 //
 //   - logs: a slice of maps where the outer key is the source and the inner map contains messages and their statistics (LogStats).
 //
+//   - Shipper: an interface of type exporter.Shipper used to format the data before sending.
+//
 // Returns:
 //
-//   - error: nil if the transmission was successful or no address is configured; otherwise, returns connection, marshaling, or write errors.
+//   - error: nil if the transmission was successful or no address is configured; otherwise, returns connection, formatting, or write errors.
 //
 // The function performs:
 //
@@ -26,20 +29,14 @@ import (
 //
 //   - Iterates through the slice of log maps:
 //
-//   - For each source (key) and its statistics (stat):
+//     -Calls Shipper.PrepareShip(messages) to transform each map of log statistics into a formatted byte slice.
 //
-//     -Constructs a DataSentTcp structure with the origin and a data slice.
+//     -Writes the resulting byte slice to the established network connection.
 //
-//     -For each message in that source, creates a TcpLogSent entry with count, firstSeen, lastSeen, and the message content.
-//
-//     -Serializes the DataSentTcp structure to JSON.
-//
-//     -Writes the JSON data to the connection.
-//
-//   - If any error occurs (connection, marshal, or write), it returns immediately.
+//   - If any error occurs (connection, formatting via PrepareShip, or write), it returns immediately.
 //
 //   - Upon completion, closes the connection and returns nil.
-func ShipLogsFile(logs []map[string]map[string]*pipelines.LogStats) (err error) {
+func ShipLogsFile(logs []map[string]map[string]*pipelines.LogStats, Shipper exporter.Shipper) (err error) {
 	if options.Config.ShipperConfig.Address == "" {
 		return nil
 	}
@@ -55,7 +52,7 @@ func ShipLogsFile(logs []map[string]map[string]*pipelines.LogStats) (err error) 
 	defer conn.Close()
 
 	for _, messages := range logs {
-		data, err := ShipsIntegrations(messages)
+		data, err := Shipper.PrepareShip(messages)
 		if err != nil {
 			return err
 		}
@@ -66,5 +63,4 @@ func ShipLogsFile(logs []map[string]map[string]*pipelines.LogStats) (err error) 
 	}
 
 	return nil
-
 }

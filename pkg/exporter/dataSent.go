@@ -4,7 +4,7 @@ import "time"
 
 type DataSent struct {
 	Origin string    `json:"origin"`
-	Data   []LogSent `json:"tcpLogSent"`
+	Data   []LogSent `json:"data"`
 }
 
 type LogSent struct {
