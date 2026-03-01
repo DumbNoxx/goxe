@@ -2,7 +2,6 @@ package exporter
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/DumbNoxx/goxe/internal/utils/colors"
 	pipelines "github.com/DumbNoxx/goxe/pkg/pipelines"
@@ -40,9 +39,9 @@ import (
 func Console(logs map[string]map[string]*pipelines.LogStats, isFinal bool) {
 
 	if isFinal {
-		fmt.Println(strings.ToUpper("\tFinal Report"))
+		fmt.Println("\tFINAL REPORT")
 	} else {
-		fmt.Println(strings.ToUpper("\tPartial Report"))
+		fmt.Println("\tPARTIAL REPORT")
 	}
 	fmt.Println("----------------------------------")
 

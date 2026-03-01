@@ -15,7 +15,7 @@ var Str *strings.Replacer
 //
 // The function performs:
 //
-//   - Iterates through options.Config.Pa and constructs a list of pairs
+//   - Iterates through options.Config.PatternsWords and constructs a list of pairs
 //     (word to find, empty replacement) for strings.NewReplacer.
 //   - Creates a new strings.Replacer with that list and assigns it to Str.
 func LoadFiltersWord() {
