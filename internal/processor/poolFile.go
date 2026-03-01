@@ -56,7 +56,7 @@ import (
 //
 //   - Calls exporter.FileReader(logsFile, routeFile) to save the report to a file.
 //
-//   - Calls integrations.Integrations(logs), send data to Observability Platforms
+//   - Calls integrations.Integrations(logsFile), send data to Observability Platforms
 //
 //   - Checks for scanner errors via scanner.Err() and terminates with log.Fatal if found.
 //

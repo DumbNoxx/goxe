@@ -32,7 +32,7 @@ var (
 //
 //     - Calculates elapsed time since the window started (WindowStart).
 //
-//     - If the limit is exceeded (LimitBreak), it resets the window and counter, then jumps to CheckGlobal.
+//     - If the limit is exceeded (LimitBreak), initializes the counter to 1, then jumps to CheckGlobal.
 //
 //     - If the counter is <= 10, it jumps to CheckGlobal (not yet burst).
 //

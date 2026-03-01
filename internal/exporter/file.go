@@ -30,7 +30,7 @@ import (
 //
 //   - Constructs the full path: <cacheDir>/goxe/logs/<filename>.
 //
-//   - Attempts to read the file location with os.ReadDir. If an error occurs that is not "not found," it terminates with log.Fatal.
+//   - Attempts to read the file location with os.ReadDir. If an error occurs that is not "not found," it uses log.Println and returns.
 //
 //   - Builds the report content using a strings.Builder:
 //
