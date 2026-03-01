@@ -2,6 +2,7 @@ package exporter
 
 import (
 	"encoding/json"
+
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
 )
 
@@ -43,7 +44,7 @@ type JsonManager struct{}
 //
 // Returns:
 //
-//   - data: byte slice containing the JSON-marshaled data of the last processed source.
+//   - data: byte slice containing the JSON-marshaled data of all processed sources.
 //   - err: error object if the JSON marshaling fails.
 //
 // The function performs:
@@ -61,16 +62,18 @@ type JsonManager struct{}
 //
 //     -Appends each log entry to the 'DataSent.Data' slice.
 //
-//     -Marshals the 'DataSent' structure into a JSON byte slice.
+//     -Marshals the entire 'Data' slice into a JSON byte slice after processing all sources..
 //
 //   - If an error occurs during marshaling, returns an empty byte slice with the error.
 //
 //   - Returns the resulting byte slice and a nil error upon successful completion.
 func (shipper *JsonManager) PrepareShip(logs map[string]map[string]*pipelines.LogStats) (data []byte, err error) {
+	var Data = make([]DataSent, 0)
+
 	for key, messages := range logs {
-		var DataSent DataSent
-		DataSent.Origin = key
-		DataSent.Data = make([]LogSent, 0, len(messages))
+		var DataSents DataSent
+		DataSents.Origin = key
+		DataSents.Data = make([]LogSent, 0, len(messages))
 		for msg, stats := range messages {
 			var logEntry = LogSent{
 				Count:     stats.Count,
@@ -78,12 +81,17 @@ func (shipper *JsonManager) PrepareShip(logs map[string]map[string]*pipelines.Lo
 				LastSeen:  stats.LastSeen,
 				Message:   msg,
 			}
-			DataSent.Data = append(DataSent.Data, logEntry)
+			DataSents.Data = append(DataSents.Data, logEntry)
 		}
-		data, err = json.Marshal(DataSent)
-		if err != nil {
-			return []byte{}, err
-		}
+		Data = append(Data, DataSent{
+			Origin: DataSents.Origin,
+			Data:   DataSents.Data,
+		})
 	}
+	data, err = json.Marshal(Data)
+	if err != nil {
+		return []byte{}, err
+	}
+
 	return data, nil
 }

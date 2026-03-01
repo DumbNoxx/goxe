@@ -32,7 +32,7 @@ var (
 //
 //     - Calculates elapsed time since the window started (WindowStart).
 //
-//     - If the limit is exceeded (LimitBreak), initializes the counter to 1, then jumps to CheckGlobal.
+//     - If the limit is exceeded (LimitBreak), it restarts the window, resets the alert counter, and initializes the message counter to 1.
 //
 //     - If the counter is <= 10, it jumps to CheckGlobal (not yet burst).
 //
@@ -46,7 +46,7 @@ var (
 //
 //     - Increments its counter and checks the elapsed time.
 //
-//     - If it exceeds LimitBreak, it resets the window and alert counter.
+//     - If it exceeds LimitBreak, it restarts the burst window, resets the message counter, and sets the alert counter to 1.
 //
 //     - if the global counter is < 100, it does nothing.
 //
