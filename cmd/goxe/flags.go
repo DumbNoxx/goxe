@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"sync"
 
-	"github.com/DumbNoxx/goxe/internal/processor"
+	"github.com/DumbNoxx/goxe/internal/factory"
 )
 
 func init() {
@@ -40,7 +40,12 @@ func brewFlag(wg *sync.Mutex) error {
 		return err
 	}
 	defer file.Close()
-	processor.CleanFile(file, idLog, wg, routeFile, Shipper)
+	manager, err := factory.GetIngestor(routeFile)
+	if err != nil {
+		return err
+	}
+
+	manager.FileNormalized(file, idLog, wg, routeFile, Shipper)
 
 	return nil
 }
