@@ -1,48 +1,32 @@
 {
-  description = "minimal flake for go dev";
+  description = "Goxe";
 
-  inputs.nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
 
   outputs =
-    inputs:
-    let
-      goVersion = 25;
-
-      supportedSystems = [
-        "x86_64-linux"
-        "aarch64-linux"
-        "x86_64-darwin"
-        "aarch64-darwin"
-      ];
-      forEachSupportedSystem =
-        f:
-        inputs.nixpkgs.lib.genAttrs supportedSystems (
-          system:
-          f {
-            pkgs = import inputs.nixpkgs {
-              inherit system;
-              overlays = [ inputs.self.overlays.default ];
-            };
-          }
-        );
-    in
     {
-      overlays.default = final: prev: {
-        go = final."go_1_${toString goVersion}";
-      };
+      nixpkgs,
+      flake-utils,
+      ...
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
 
-      devShells = forEachSupportedSystem (
-        { pkgs }:
-        {
-          default = pkgs.mkShell {
-            packages = [
-              pkgs.go
-              pkgs.go-task
-            ];
-          };
-        }
-      );
-    };
+        nativeBuildInputs = [
+          pkgs.go
+          pkgs.gopls
+          pkgs.go-task
+        ];
+        buildInputs = with pkgs; [ ];
+      in
+      {
+        devShells.default = pkgs.mkShell { inherit nativeBuildInputs buildInputs; };
+
+      }
+    );
 }
-
-
