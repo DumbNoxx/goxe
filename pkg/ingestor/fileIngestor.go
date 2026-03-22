@@ -2,6 +2,9 @@ package ingestor
 
 import (
 	"bufio"
+	"encoding/json"
+	"fmt"
+	"io"
 	"log"
 	"os"
 	"sync"
@@ -14,6 +17,10 @@ import (
 	"github.com/DumbNoxx/goxe/internal/processor/sanitizer"
 	pkgEx "github.com/DumbNoxx/goxe/pkg/exporter"
 	"github.com/DumbNoxx/goxe/pkg/pipelines"
+)
+
+var (
+	logsFile        = make(map[string]map[string]*pipelines.LogStats, 100)
 )
 
 // File defines the contract for processing and normalizing log files.
@@ -80,7 +87,6 @@ func (f *NormalizedManager) FileNormalized(file *os.File, idLog string, mu *sync
 	var (
 		sanitizadedText string
 		data            []byte
-		logsFile        = make(map[string]map[string]*pipelines.LogStats, 100)
 	)
 
 	scanner := bufio.NewScanner(file)
@@ -120,4 +126,49 @@ func (f *NormalizedManager) FileNormalized(file *os.File, idLog string, mu *sync
 	}
 
 	clear(logsFile)
+}
+
+type JsonManager struct{}
+
+func (f *JsonManager) FileNormalized(file *os.File, idLog string, mu *sync.Mutex, routeFile string, Shipper pkgEx.Shipper) {
+	var (
+		dataMap map[string]any
+	)
+	dec := json.NewDecoder(file)
+	for {
+		if err := dec.Decode(&dataMap); err == io.EOF {
+			break
+		} else if err != nil {
+			log.Fatal(err.Error())
+		}
+	}
+	f.analizeJson(dataMap, 0)
+}
+
+func (f *JsonManager) analizeJson(file any, depth int) {
+	switch value := file.(type) {
+	case nil:
+		fmt.Println("nil")
+		return
+	case bool:
+		fmt.Printf("bool: %v\n",  value)
+	case float64:
+		fmt.Printf("float %.2f\n", value)
+	case int:
+		fmt.Printf("number: %d\n",  value)
+	case string:
+		fmt.Printf("string: %s\n",  value)
+	case []any:
+		fmt.Println("array:")
+		for _, item := range value {
+			fmt.Printf("%s %s:\n", value, item)
+			f.analizeJson(item, depth+1)
+		}
+	case map[string]any:
+		fmt.Println("object:")
+		for key, val := range value {
+			fmt.Printf("%s:\n", key)
+			f.analizeJson(val, depth+2)
+		}
+	}
 }
