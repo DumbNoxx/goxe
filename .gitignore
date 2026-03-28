@@ -28,6 +28,8 @@ go.work.sum
 
 # env file
 .env
+.envrc
+.direnv
 
 # Editor/IDE
 # .idea/
