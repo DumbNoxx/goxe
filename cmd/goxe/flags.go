@@ -27,7 +27,7 @@ var (
 )
 
 func updateArg() {
-	fmt.Println("Sending update signal to the active instance...")
+	fmt.Println("[Goxe] Sending update signal to the active instance...")
 	cmd := exec.Command("pkill", "-SIGUSR1", "goxe")
 	cmd.Run()
 }

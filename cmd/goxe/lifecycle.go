@@ -94,7 +94,7 @@ func handleUpdate(sigChan chan os.Signal, ctx context.Context, cancel context.Ca
 	for sig := range sigChan {
 		if isUpdateSignal(sig) {
 
-			fmt.Println("\n[System] Update signal received! Starting auto-update...")
+			fmt.Println("\n[Goxe] Update signal received! Starting auto-update...")
 			ticker := time.NewTicker(1 * time.Second)
 			count := 1
 			updateDone := false

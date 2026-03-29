@@ -156,8 +156,8 @@ func viewNewVersion(ctx context.Context, wg *sync.WaitGroup) {
 			fmt.Println("--- Release Notes ---")
 			fmt.Printf("\n%v\n", release.Body)
 			fmt.Println("----------------------")
-			fmt.Println("\n[Update] To install the latest version, please run 'goxe update' in a separate terminal.")
-			fmt.Println("[Update] Note: This applies if goxe was installed via 'go install'.")
+			fmt.Println("\n[Goxe] update: to install the latest version, please run 'goxe update' in a separate terminal.")
+			fmt.Println("[Goxe] update:  Note: This applies if goxe was installed via 'go install'.")
 		case <-ctx.Done():
 			return
 		}
@@ -229,15 +229,15 @@ func autoUpdate(ctx context.Context, cancel context.CancelFunc, pipe chan<- *pip
 				return
 			}
 			if err := os.Rename(tempBin, currentLocation); err != nil {
-				fmt.Printf("[Error] Failed to swap binary: %v\n", err)
+				fmt.Printf("[Goxe] error: failed to swap binary: %v\n", err)
 				return
 			}
 
-			fmt.Println("[System] Preparing handoff, flushing buffers...")
+			fmt.Println("[Goxe] Preparing handoff, flushing buffers...")
 			executeHandoff(once, cancel, pipe, wgProcessor, wgProducer)
 			err = syscall.Exec(currentLocation, []string{currentLocation, "-is-upgrade"}, os.Environ())
 
-			fmt.Printf("\n[Error] the handoff failed!: %v\n", err)
+			fmt.Printf("\n[Goxe] error:  the handoff failed!: %v\n", err)
 			os.Exit(1)
 
 			<-ctx.Done()
@@ -251,12 +251,12 @@ func autoUpdate(ctx context.Context, cancel context.CancelFunc, pipe chan<- *pip
 				return
 			}
 		}
-		fmt.Println("[System] Preparing handoff, flushing buffers...")
+		fmt.Println("[Goxe] Preparing handoff, flushing buffers...")
 
 		executeHandoff(once, cancel, pipe, wgProcessor, wgProducer)
 		err = syscall.Exec(currentLocation, []string{currentLocation, "-is-upgrade"}, os.Environ())
 
-		fmt.Printf("\n[Error] the handoff failed!: %v\n", err)
+		fmt.Printf("\n[Goxe] error: the handoff failed!: %v\n", err)
 		os.Exit(1)
 
 		<-ctx.Done()

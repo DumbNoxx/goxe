@@ -12,6 +12,8 @@ func GetIngestor(route string) (manager ingestor.File, err error) {
 	switch extension {
 	case ".log", ".txt":
 		return &ingestor.NormalizedManager{}, nil
+	case ".json":
+		return &ingestor.JsonManager{}, nil
 	default:
 		return nil, fmt.Errorf("[Goxe] unsupported file extension: %s", extension)
 	}
