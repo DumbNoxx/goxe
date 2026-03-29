@@ -75,10 +75,10 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 		case text, ok := <-pipe:
 			if !ok {
 				if len(logs) <= 0 {
-					fmt.Println("\n[System] System terminated")
+					fmt.Println("\n[Goxe] Terminated")
 					return
 				}
-				fmt.Println("\n[System] System terminated last report")
+				fmt.Println("\n[Goxe] Terminated last report")
 				exporter.Console(logs, true)
 				exporter.ShipLogs(logs, Shipper)
 				return

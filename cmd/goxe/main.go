@@ -47,7 +47,7 @@ func main() {
 			res http.Response
 		)
 		if getVersion() == getVersionLatest(&req, &res, ctx).Tag_name {
-			fmt.Println("[System] System is already up to date")
+			fmt.Println("[Goxe] System is already up to date")
 			os.Exit(0)
 		}
 		updateArg()
@@ -63,7 +63,7 @@ func main() {
 		fmt.Println(getVersion())
 		os.Exit(0)
 	case *isUpgrade:
-		fmt.Println("[System] Goxe updated")
+		fmt.Println("[Goxe] Goxe updated")
 	}
 
 	sigChan := make(chan os.Signal, 1)
@@ -84,8 +84,6 @@ func main() {
 	signal.Notify(stopChan, os.Interrupt)
 	<-stopChan
 
-	fmt.Println("[System] Shutdown app, flushing buffers...")
-	fmt.Println(Shipper)
+	fmt.Println("\n[Goxe] Shutdown app, flushing buffers...")
 	executeHandoff(&once, cancel, pipe, &wgProcessor, &wgProducer)
-
 }

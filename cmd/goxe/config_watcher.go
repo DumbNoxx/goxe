@@ -72,7 +72,7 @@ func viewConfig(ctx context.Context, wg *sync.WaitGroup) {
 				log.Fatal(err)
 			}
 			if currentStat.ModTime().After(lastModified) {
-				fmt.Println("Config update, reload...")
+				fmt.Println("[Goxe] Config update, reload...")
 				lastModified = currentStat.ModTime()
 				options.Config = options.ConfigFile()
 				utils.TimeReportFile = utils.UserConfigHour()
