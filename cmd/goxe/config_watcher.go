@@ -13,7 +13,6 @@ import (
 	"github.com/DumbNoxx/goxe/internal/options"
 	"github.com/DumbNoxx/goxe/internal/processor/filters"
 	rTime "github.com/DumbNoxx/goxe/internal/processor/reportTime"
-	"github.com/DumbNoxx/goxe/internal/utils"
 )
 
 // viewConfig monitors the configuration file for changes and reloads it automatically.
@@ -52,7 +51,7 @@ import (
 //     -Reloads word filters with filters.LoadFiltersWord().
 //
 //   - If ctx is cancelled, the function returns.
-func viewConfig(ctx context.Context, wg *sync.WaitGroup) {
+func viewConfig(ctx context.Context, wg *sync.WaitGroup, getConfig options.ConfigProvider, reloadConfig func()) {
 	defer wg.Done()
 
 	dir, _ := os.UserConfigDir()
@@ -74,12 +73,12 @@ func viewConfig(ctx context.Context, wg *sync.WaitGroup) {
 			if currentStat.ModTime().After(lastModified) {
 				fmt.Println("[Goxe] Config update, reload...")
 				lastModified = currentStat.ModTime()
-				options.Config = options.ConfigFile()
-				utils.TimeReportFile = utils.UserConfigHour()
-				rTime.GetReportFileTime()
-				rTime.GetReportPartialTime()
-				filters.LoadFiltersWord()
-				factory.GetShipper(options.Config.Destination)
+				reloadConfig()
+				current := getConfig()
+				rTime.GetReportFileTime(getConfig)
+				rTime.GetReportPartialTime(getConfig)
+				filters.LoadFiltersWord(getConfig)
+				factory.GetShipper(current.Destination)
 			}
 		case <-ctx.Done():
 			return

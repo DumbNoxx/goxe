@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/DumbNoxx/goxe/internal/factory"
+	"github.com/DumbNoxx/goxe/internal/options"
 )
 
 func init() {
@@ -32,7 +33,7 @@ func updateArg() {
 	cmd.Run()
 }
 
-func brewFlag(wg *sync.Mutex) error {
+func brewFlag(wg *sync.Mutex, getConfig options.ConfigProvider) error {
 	routeFile = flag.Arg(0)
 	idLog := flag.Arg(1)
 	file, err := os.Open(routeFile)
@@ -45,7 +46,7 @@ func brewFlag(wg *sync.Mutex) error {
 		return err
 	}
 
-	manager.FileNormalized(file, idLog, wg, routeFile, Shipper)
+	manager.FileNormalized(file, idLog, wg, routeFile, Shipper, getConfig)
 
 	return nil
 }

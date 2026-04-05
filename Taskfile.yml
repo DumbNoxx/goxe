@@ -9,6 +9,12 @@ tasks:
       - echo "Running the application"
       - go run ./cmd/goxe .
     silent: true
+  dev#:
+    desc: Run the app in development mode with flags or arguments
+    cmds:
+      - echo "Running the application with flags or arguments"
+      - go run ./cmd/goxe {{.CLI_ARGS}}
+    silent: true
   build:
     desc: Building program in golang
     cmds:

@@ -15,6 +15,7 @@ import (
 	"unsafe"
 
 	"github.com/DumbNoxx/goxe/internal/exporter"
+	"github.com/DumbNoxx/goxe/internal/options"
 	"github.com/DumbNoxx/goxe/internal/processor/cluster"
 	"github.com/DumbNoxx/goxe/internal/processor/integrations"
 	"github.com/DumbNoxx/goxe/internal/processor/sanitizer"
@@ -30,7 +31,7 @@ var (
 // It allows swapping different processing logic while maintaining a consistent signature.
 type File interface {
 	// FileNormalized handles reading, clustering, and exporting data from a file.
-	FileNormalized(file *os.File, idLog string, mu *sync.Mutex, routeFile string, Shipper pkgEx.Shipper)
+	FileNormalized(file *os.File, idLog string, mu *sync.Mutex, routeFile string, Shipper pkgEx.Shipper, getConfig options.ConfigProvider)
 }
 
 // NormalizedManager provides the standard implementation for managing normalized logs.
@@ -85,7 +86,7 @@ type NormalizedManager struct{}
 // - Checks for scanner errors via scanner.Err() and terminates with log.Fatal if found.
 //
 // - Clears the logsFile map using 'clear()' to free memory.
-func (f *NormalizedManager) FileNormalized(file *os.File, idLog string, mu *sync.Mutex, routeFile string, Shipper pkgEx.Shipper) {
+func (f *NormalizedManager) FileNormalized(file *os.File, idLog string, mu *sync.Mutex, routeFile string, Shipper pkgEx.Shipper, getConfig options.ConfigProvider) {
 
 	var (
 		sanitizadedText string
@@ -96,7 +97,7 @@ func (f *NormalizedManager) FileNormalized(file *os.File, idLog string, mu *sync
 
 	for scanner.Scan() {
 		data = scanner.Bytes()
-		dataCluster := cluster.Cluster(data, idLog)
+		dataCluster := cluster.Cluster(data, idLog, getConfig)
 		sanitizadedText = unsafe.String(unsafe.SliceData(dataCluster), len(dataCluster))
 
 		mu.Lock()
@@ -117,12 +118,12 @@ func (f *NormalizedManager) FileNormalized(file *os.File, idLog string, mu *sync
 		logsFile["file-reader"][sanitizadedText].LastSeen = time.Now()
 		mu.Unlock()
 	}
-	err := exporter.ShipLogs(logsFile, Shipper)
+	err := exporter.ShipLogs(logsFile, Shipper, getConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
 	exporter.FileReader(logsFile, routeFile)
-	integrations.Integrations(logsFile, Shipper)
+	integrations.Integrations(logsFile, Shipper, getConfig)
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
@@ -157,7 +158,7 @@ type JsonManager struct{}
 //    - Upon reaching EOF, calls exporter.FileReaderJson to generate the report.
 //    - Terminates with log.Fatal if a decoding error (other than EOF) occurs.
 //    - Clears the logsFile map using 'clear()' to free memory.
-func (f *JsonManager) FileNormalized(file *os.File, idLog string, mu *sync.Mutex, routeFile string, Shipper pkgEx.Shipper) {
+func (f *JsonManager) FileNormalized(file *os.File, idLog string, mu *sync.Mutex, routeFile string, Shipper pkgEx.Shipper, getConfig options.ConfigProvider) {
 	var (
 		dataMap any
 		id      string

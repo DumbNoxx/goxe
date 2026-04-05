@@ -5,11 +5,11 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/DumbNoxx/goxe/pkg/options"
 )
 
-var Config = ConfigFile()
 
 // ConfigFile loads the configuration from the config.json file in the user's config directory.
 // If the file does not exist, it creates it with default values. If it exists but is invalid, it uses the default values.
@@ -84,3 +84,28 @@ func ConfigFile() (config options.Config) {
 	}
 	return config
 }
+
+
+
+
+type ConfigProvider func() options.Config 
+
+func NewConfigManager() (ConfigProvider, func()) {
+	var mu sync.RWMutex
+	instance := ConfigFile()
+
+	reader := func() options.Config {
+		mu.RLock()
+		defer mu.RUnlock()
+		return instance
+	}
+	updater := func() {
+		newCofig := ConfigFile()
+		mu.Lock()
+		instance = newCofig
+		mu.Unlock()
+	}
+
+	return reader, updater
+}
+

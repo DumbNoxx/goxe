@@ -37,14 +37,15 @@ import (
 //
 //   - Returns the error if any step (dialing, transforming, or writing) fails;
 //     otherwise, returns nil.
-func ShipLogs(logs map[string]map[string]*pipelines.LogStats, Shipper exporter.Shipper) (err error) {
-	if options.Config.ShipperConfig.Address == "" {
+func ShipLogs(logs map[string]map[string]*pipelines.LogStats, Shipper exporter.Shipper, getConfig options.ConfigProvider) (err error) {
+	conf := getConfig()
+	if conf.ShipperConfig.Address == "" {
 		return nil
 	}
 	conn, err := net.DialTimeout(
-		options.Config.ShipperConfig.Protocol,
-		options.Config.ShipperConfig.Address,
-		time.Duration(options.Config.ShipperConfig.FlushInterval)*time.Second,
+		conf.ShipperConfig.Protocol,
+		conf.ShipperConfig.Address,
+		time.Duration(conf.ShipperConfig.FlushInterval)*time.Second,
 	)
 
 	if err != nil {

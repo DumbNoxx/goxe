@@ -15,7 +15,6 @@ import (
 )
 
 var (
-	PORT      string = ":" + strconv.Itoa(options.Config.Port)
 	lastIp    string
 	lastRawIp net.IP
 	Server    net.ListenConfig
@@ -44,12 +43,14 @@ var (
 //   - Sends the entry to the pipe channel, respecting context cancellation.
 //   - If a read error occurs that is not related to cancellation, it logs the error and continues.
 //   - Upon termination (via cancellation), the function returns.
-func Udp(ctx context.Context, pipe chan<- *pipelines.LogEntry, wg *sync.WaitGroup) {
+func Udp(ctx context.Context, pipe chan<- *pipelines.LogEntry, wg *sync.WaitGroup, getConfig options.ConfigProvider) {
 	defer wg.Done()
+	conf := getConfig()
+	var PORT string = ":" + strconv.Itoa(conf.Port)
 	conn, err := Server.ListenPacket(ctx, "udp", PORT)
 
 	if udpConn, ok := conn.(*net.UDPConn); ok {
-		udpConn.SetReadBuffer(options.Config.BufferUdpSize * 1024 * 1024)
+		udpConn.SetReadBuffer(conf.BufferUdpSize * 1024 * 1024)
 	}
 
 	if err != nil {
@@ -87,7 +88,7 @@ func Udp(ctx context.Context, pipe chan<- *pipelines.LogEntry, wg *sync.WaitGrou
 		dates.Content = buffer[:n]
 		dates.Source = lastIp
 		dates.Timestamp = time.Now()
-		dates.IdLog = options.Config.IdLog
+		dates.IdLog = conf.IdLog
 		dates.RawEntry = buffer
 
 		select {

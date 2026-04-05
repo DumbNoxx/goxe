@@ -53,8 +53,9 @@ var (
 //     - if 10 global alerts have been sent or the last one was less than 5 seconds ago, it does nothing.
 //
 //     - Otherwise, it triggers a webhook for AGGREGATE_TRAFFIC and updates its metada.
-func BurstDetection(logsBurst map[string]*pipelines.LogBurst, word string, text []byte) {
-	limitBreak := time.Duration(float64(time.Second) * options.Config.BurstDetectionOptions.LimitBreak)
+func BurstDetection(logsBurst map[string]*pipelines.LogBurst, word string, text []byte, getConfig options.ConfigProvider) {
+	conf := getConfig()
+	limitBreak := time.Duration(float64(time.Second) * conf.BurstDetectionOptions.LimitBreak)
 	if slices.Contains(errs, word) {
 		stats := logsBurst[word]
 		elapsed := time.Since(logsBurst[word].WindowStart)
@@ -76,7 +77,7 @@ func BurstDetection(logsBurst map[string]*pipelines.LogBurst, word string, text 
 			return
 		}
 
-		webhooks.HandleWebhook(word, logsBurst[word])
+		webhooks.HandleWebhook(word, logsBurst[word], getConfig)
 		logsBurst[word].LastAlertTime = time.Now()
 		logsBurst[word].AlertsSent++
 
@@ -116,7 +117,7 @@ CheckGlobal:
 		return
 	}
 
-	webhooks.HandleWebhook("AGGREGATE_TRAFFIC", global)
+	webhooks.HandleWebhook("AGGREGATE_TRAFFIC", global, getConfig)
 	global.LastAlertTime = time.Now()
 	global.AlertsSent++
 }

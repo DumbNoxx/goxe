@@ -1,6 +1,9 @@
 package cluster
 
-import "github.com/DumbNoxx/goxe/internal/processor/sanitizer"
+import (
+	"github.com/DumbNoxx/goxe/internal/options"
+	"github.com/DumbNoxx/goxe/internal/processor/sanitizer"
+)
 
 // Cluster processes a log by applying sanitization and normalization.
 //
@@ -14,8 +17,8 @@ import "github.com/DumbNoxx/goxe/internal/processor/sanitizer"
 // The function performs:
 //   - Calls sanitizer.Sanitizer with log and idLog to clean the text.
 //   - Then calls NormalizeLog on the result to unity the format.
-func Cluster(log []byte, idLog string) []byte {
-	text := sanitizer.Sanitizer(log, idLog)
+func Cluster(log []byte, idLog string, getConfig options.ConfigProvider) []byte {
+	text := sanitizer.Sanitizer(log, idLog, getConfig)
 	normalizeLog := NormalizeLog(text)
 
 	return normalizeLog
