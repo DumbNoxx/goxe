@@ -14,7 +14,6 @@ var (
 	reDates  = regexp.MustCompile(strings.Join(filters.PatternsDate, "|"))
 	reIpLogs = regexp.MustCompile(filters.PatternIpLogs)
 	Re       = regexp.MustCompile(`\d+`)
-	SafeWord = SafeWordFunc([]byte(options.Config.IdLog))
 )
 
 // SafeWordFunc constructs a regular expression that searches for the pattern "<idLog>_<numeric ID>".
@@ -39,4 +38,9 @@ func SafeWordFunc(word []byte) *regexp.Regexp {
 	fmt.Fprint(&newWord, string(word))
 	fmt.Fprint(&newWord, "_")
 	return regexp.MustCompile(regexp.QuoteMeta(newWord.String()) + filters.PatternsIdLogs)
+}
+
+func GetSafeWordRegx(getConfig options.ConfigProvider) *regexp.Regexp {
+	conf := getConfig()
+	return SafeWordFunc([]byte(conf.IdLog))
 }

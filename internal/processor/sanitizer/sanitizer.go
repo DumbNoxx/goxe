@@ -2,6 +2,10 @@ package sanitizer
 
 import (
 	"bytes"
+	"unsafe"
+
+	"github.com/DumbNoxx/goxe/internal/options"
+	"github.com/DumbNoxx/goxe/internal/processor/filters"
 )
 
 // Sanitizer cleans a log by removing spaces, IP addresses, dates, log levels, and,
@@ -30,14 +34,18 @@ import (
 //   - Extracts the log level in uppercase by calling ExtractLevelUpper on the
 //     lowercase version of the text (before levels are removed).
 //   - Concatenates the extracted level with the clean text and returns the result.
-func Sanitizer(text []byte, idLog string) (newSlice []byte) {
-	var infoWord []byte
+func Sanitizer(text []byte, idLog string, getConfig options.ConfigProvider) (newSlice []byte) {
+	var (
+		infoWord  []byte
+		textClean string 
+	)
 
 	text = bytes.TrimSpace(text)
 	text = reIpLogs.ReplaceAll(text, []byte(""))
+	safeWord := GetSafeWordRegx(getConfig)
 
 	if len(idLog) > 0 {
-		infoWord = SafeWord.ReplaceAll(text, []byte(""))
+		infoWord = safeWord.ReplaceAll(text, []byte(""))
 	} else {
 		infoWord = text
 	}
@@ -46,7 +54,11 @@ func Sanitizer(text []byte, idLog string) (newSlice []byte) {
 	infoText := reDates.ReplaceAll(textSanitize, []byte(""))
 	cleanText := bytes.TrimSpace(reStatus.ReplaceAll(infoText, []byte("")))
 	newSlice = ExtractLevelUpper(textSanitize)
-
+	if r := filters.GetReplacer(); r != nil {
+		strContent := unsafe.String(unsafe.SliceData(cleanText), len(cleanText))
+		textClean = r.Replace(strContent)
+		cleanText = []byte(textClean) 
+	}
 	newSlice = append(newSlice, cleanText...)
 	return newSlice
 }

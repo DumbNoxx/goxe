@@ -25,8 +25,9 @@ import (
 //   - If the creation fails, it prints an error with log.Printf (does not terminate the program).
 //   - If Config.GenerateLogsOptions.GenerateLogsFile is true, it calls logs.LogsCacheDirGenerate(folderCachePath)
 //     to create the "logs" subdirectory.
-func CacheDirGenerate() {
+func CacheDirGenerate(getConfig ConfigProvider) {
 	dir, dirErr := os.UserCacheDir()
+	conf := getConfig()
 	if dirErr != nil {
 		log.Printf("Could not determine cache directory: %v. Using default settings based on: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html", dirErr)
 	}
@@ -49,7 +50,7 @@ func CacheDirGenerate() {
 		}
 	}
 
-	if Config.GenerateLogsOptions.GenerateLogsFile {
+	if conf.GenerateLogsOptions.GenerateLogsFile {
 		logs.LogsCacheDirGenerate(folderCachePath)
 	}
 }

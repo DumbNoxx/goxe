@@ -7,7 +7,6 @@ import (
 	"github.com/DumbNoxx/goxe/internal/options"
 )
 
-var TimeReportFile = UserConfigHour()
 
 // UserConfigHour calculates the duration until the next occurrence of the configured hour
 // (Config.GenerateLogsOptions.Hour) on the current or following day.
@@ -25,8 +24,9 @@ var TimeReportFile = UserConfigHour()
 //   - Calculates the difference between that target time and the current moment (time.Now()).
 //   - If the difference is negative (the hour has already passed), it adds 24 hours to target the next day.
 //   - Returns the resulting duration.
-func UserConfigHour() (dateHour time.Duration) {
-	userHour := options.Config.GenerateLogsOptions.Hour
+func UserConfigHour(getConfig options.ConfigProvider) (dateHour time.Duration) {
+	conf := getConfig()
+	userHour := conf.GenerateLogsOptions.Hour
 	parseHour, err := time.Parse("15:04:05", userHour)
 	hourNow := time.Now()
 

@@ -34,12 +34,6 @@ var (
 //
 // - TickerReportFile: controls report file generation.
 // - Ticker: controls periodic export (console/remote) based on ReportInterval.
-func init() {
-	filters.LoadFiltersWord()
-	TickerReportFile = time.NewTicker(utils.TimeReportFile)
-	TimeReport = time.Duration(options.Config.ReportInterval * float64(time.Minute))
-	Ticker = time.NewTicker(TimeReport)
-}
 
 // Clean function that processes the received information and sends it to their corresponding functions
 //
@@ -63,7 +57,12 @@ func init() {
 // Note: This functions is intented to run as a concurrent goroutine.
 // It uses the unsafe package for zero-copy byte-to-string conversions,
 // assuming the underlying buffers will not be modified afterward.
-func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex, Shipper pkgEx.Shipper) {
+func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGroup, mu *sync.Mutex, Shipper pkgEx.Shipper, getConfig options.ConfigProvider) {
+	conf := getConfig()
+	TickerReportFile = time.NewTicker(utils.UserConfigHour(getConfig))
+	TimeReport = time.Duration(conf.ReportInterval * float64(time.Minute))
+	filters.LoadFiltersWord(getConfig)
+	Ticker = time.NewTicker(TimeReport)
 	defer wg.Done()
 	defer Ticker.Stop()
 	defer TickerReportFile.Stop()
@@ -80,11 +79,11 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 				}
 				fmt.Println("\n[Goxe] Terminated last report")
 				exporter.Console(logs, true)
-				exporter.ShipLogs(logs, Shipper)
+				exporter.ShipLogs(logs, Shipper, getConfig)
 				return
 			}
 			buf := text.RawEntry
-			dataCluster := cluster.Cluster(text.Content, text.IdLog)
+			dataCluster := cluster.Cluster(text.Content, text.IdLog, getConfig)
 			sanitizadedText = unsafe.String(unsafe.SliceData(dataCluster), len(dataCluster))
 			mu.Lock()
 			if logs[text.Source] == nil {
@@ -110,7 +109,7 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 					LastAlertTime: time.Time{},
 				}
 			}
-			burstdetection.BurstDetection(logsBurst, word, text.Content)
+			burstdetection.BurstDetection(logsBurst, word, text.Content, getConfig)
 			logs[text.Source][sanitizadedText].Count++
 			logs[text.Source][sanitizadedText].LastSeen = text.Timestamp
 			mu.Unlock()
@@ -122,6 +121,7 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 			pipelines.EntryPool.Put(text)
 			pipelines.BufferPool.Put(buf)
 		case <-Ticker.C:
+			currentConf := getConfig()
 			if len(logs) <= 0 {
 				continue
 			}
@@ -130,17 +130,17 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 			logsToFlush := logs
 			logs = make(map[string]map[string]*pipelines.LogStats, 100)
 			mu.Unlock()
-			if options.Config.GenerateLogsOptions.GenerateLogsFile {
+			if currentConf.GenerateLogsOptions.GenerateLogsFile {
 				logsToFile = append(logsToFile, logsToFlush)
 			}
 			exporter.Console(logsToFlush, false)
-			integrations.Integrations(logsToFlush, Shipper)
-			err := exporter.ShipLogs(logsToFlush, Shipper)
+			integrations.Integrations(logsToFlush, Shipper, getConfig)
+			err := exporter.ShipLogs(logsToFlush, Shipper, getConfig)
 			if err != nil {
 				log.Print("Error sent")
 			}
 		case <-TickerReportFile.C:
-			if !options.Config.GenerateLogsOptions.GenerateLogsFile {
+			if !getConfig().GenerateLogsOptions.GenerateLogsFile {
 				continue
 			}
 
@@ -148,8 +148,8 @@ func Clean(ctx context.Context, pipe <-chan *pipelines.LogEntry, wg *sync.WaitGr
 			logsToFlush := logsToFile
 			logsToFile = make([]map[string]map[string]*pipelines.LogStats, 0)
 			mu.Unlock()
-			exporter.File(logsToFlush)
-			exporter.ShipLogsFile(logsToFlush, Shipper)
+			exporter.File(logsToFlush, getConfig)
+			exporter.ShipLogsFile(logsToFlush, Shipper, getConfig)
 		}
 	}
 }

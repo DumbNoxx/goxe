@@ -46,11 +46,12 @@ import (
 //   - Upon successful execution, prints the HTTP status response to the console.
 //
 //   - Ensures the response body is closed to prevent resource leaks.
-func Integrations(logs map[string]map[string]*pipelines.LogStats, Shipper exporter.Shipper) {
+func Integrations(logs map[string]map[string]*pipelines.LogStats, Shipper exporter.Shipper, getConfig options.ConfigProvider) {
 	var client = &http.Client{
 		Timeout: time.Second * 10,
 	}
-	for _, integration := range options.Config.Integrations {
+	conf := getConfig()
+	for _, integration := range conf.Integrations {
 		if integration.OnAggregation {
 			data, err := Shipper.PrepareShip(logs)
 			if err != nil {

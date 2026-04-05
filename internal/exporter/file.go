@@ -47,7 +47,8 @@ import (
 // Note:
 //   - The function only creates the file if it does not already exist; it does not overwrite or append to existing files.
 //   - It does not create the "logs" directory if missing; it assumes the directory was previously created (e.g., by CacheDirGenerate).
-func File(logs []map[string]map[string]*pipelines.LogStats) {
+func File(logs []map[string]map[string]*pipelines.LogStats, getConfig options.ConfigProvider) {
+	conf := getConfig()
 	cacheDir, cacheDirErr := os.UserCacheDir()
 	if cacheDirErr != nil {
 		log.Printf("Could not determine cache directory: %v. Using default settings based on: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html", cacheDirErr)
@@ -70,7 +71,7 @@ func File(logs []map[string]map[string]*pipelines.LogStats) {
 		return
 	}
 
-	fmt.Fprintf(&data, "DIARY REPORT - Set time: [%v]\n", options.Config.GenerateLogsOptions.Hour)
+	fmt.Fprintf(&data, "DIARY REPORT - Set time: [%v]\n", conf.GenerateLogsOptions.Hour)
 
 	fmt.Fprintln(&data, "----------------------------------")
 	for _, messages := range logs {

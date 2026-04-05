@@ -32,13 +32,14 @@ import (
 //
 //   - If the URL start with 'https://hooks.slack.com', it constructs a Slack-formatted payload
 //     (header, section, divider, context,blocks), serializes it to JSON, and calls sentData.
-func HandleWebhook(msg string, stats *pipelines.LogBurst) {
+func HandleWebhook(msg string, stats *pipelines.LogBurst, getConfig options.ConfigProvider) {
 	var (
 		data []byte
 		err  error
+		conf = getConfig()
 	)
 
-	for _, url := range options.Config.WebHookUrls {
+	for _, url := range conf.WebHookUrls {
 		if strings.HasPrefix(url, "https://discord.com") {
 			var DataSentWebhook pkg.WebhookDiscord
 			var log = pkg.OptionsEmbedsDiscord{

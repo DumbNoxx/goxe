@@ -15,9 +15,9 @@ import (
 //
 //   - Stops 'processor.TickerReportFile' using Stop()
 //   - Restarts it using Reset(utils.TimeReportFile) to apply new interval.
-func GetReportFileTime() {
+func GetReportFileTime(getConfig options.ConfigProvider) {
 	processor.TickerReportFile.Stop()
-	processor.TickerReportFile.Reset(utils.TimeReportFile)
+	processor.TickerReportFile.Reset(utils.UserConfigHour(getConfig))
 }
 
 // GetReportPartialTime updates the partial report interval based on the current
@@ -29,8 +29,9 @@ func GetReportFileTime() {
 //     converted to time.Duration
 //   - Stops processor.Ticker using Stop()
 //   - Restarts the ticket with the new interval using Reset(processor.TimeReport),
-func GetReportPartialTime() {
-	processor.TimeReport = time.Duration(options.Config.ReportInterval * float64(time.Minute))
+func GetReportPartialTime(getConfig options.ConfigProvider) {
+	conf := getConfig()
+	processor.TimeReport = time.Duration(conf.ReportInterval * float64(time.Minute))
 	processor.Ticker.Stop()
 	processor.Ticker.Reset(processor.TimeReport)
 }
