@@ -1,0 +1,2 @@
+Makefile linguist-detectable=true
+*.nix linguist-detectable=true
