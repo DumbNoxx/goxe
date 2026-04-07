@@ -1,4 +1,3 @@
-# Hi
 .PHONY: build dev test dev-args clean
 
 build:
