@@ -20,7 +20,6 @@
         nativeBuildInputs = [
           pkgs.go
           pkgs.gopls
-          pkgs.go-task
         ];
         buildInputs = with pkgs; [ ];
       in
